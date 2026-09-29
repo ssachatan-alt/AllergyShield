@@ -1,0 +1,99 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model UserProfile {
+  id               String            @id @default(uuid())
+  fullName         String
+  dob              String
+  primaryPhysician String?
+  emergencyContact String?
+  notes            String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  allergies        AllergyItem[]
+  labReports       LabReport[]
+  progressionLogs  ProgressionLog[]
+  scans            ScanHistory[]
+}
+
+model AllergyItem {
+  id              String      @id @default(uuid())
+  userId          String
+  user            UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  category        String      // FOOD, ENVIRONMENTAL, MEDICATION, CONTACT
+  severity        String      // MILD, MODERATE, HIGH, ANAPHYLACTIC
+  diagnosedDate   String?
+  diagnosticType  String?     // IGE_BLOOD, SKIN_PRICK, CLINICAL_HISTORY, CHALLENGE
+  reactionDetails String?
+  synonyms        String?     // JSON array of strings
+  isVerified      Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model LabReport {
+  id               String       @id @default(uuid())
+  userId           String
+  user             UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reportTitle      String
+  labName          String?
+  testDate         String
+  testType         String       // BLOOD_IGE, SKIN_PRICK, COMPONENT_RESOLVED
+  documentUrl      String?
+  status           String       // EXTRACTED, VERIFIED, COMMITTED
+  rawExtractedJson String?      // raw JSON output from Gemini Vision
+  extractedItems   LabItem[]
+  createdAt        DateTime     @default(now())
+}
+
+model LabItem {
+  id             String    @id @default(uuid())
+  reportId       String
+  report         LabReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  biomarker      String
+  category       String
+  measuredValue  Float?
+  unit           String?   // kU/L, mm, class
+  referenceRange String?
+  severity       String    // NEGATIVE, LOW, MODERATE, HIGH, VERY_HIGH
+  interpretation String?
+  isVerified     Boolean   @default(false)
+}
+
+model ProgressionLog {
+  id                   String      @id @default(uuid())
+  userId               String
+  user                 UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventDate            String
+  season               String?     // SPRING, SUMMER, FALL, WINTER
+  year                 Int
+  allergenName         String
+  reactionType         String      // Urticaria, Bronchospasm, GI Distress, Anaphylaxis, etc.
+  severity             String      // MILD, MODERATE, SEVERE, LIFE_THREATENING
+  intervention         String?     // Antihistamine, Epinephrine, Steroids, Rest
+  environmentalFactors String?     // e.g. High pollen index (10.2), Humid
+  notes                String?
+  createdAt            DateTime    @default(now())
+}
+
+model ScanHistory {
+  id               String      @id @default(uuid())
+  userId           String
+  user             UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productName      String
+  brand            String?
+  verdict          String      // HAZARD, CAUTION, SAFE
+  hazardsDetected  String?     // JSON array of matched allergens
+  cautionsDetected String?     // JSON array of warning/cross-contamination items
+  rawOcrText       String
+  ingredientsList  String?     // JSON array of parsed ingredients
+  imageUrl         String?
+  scannedAt        DateTime    @default(now())
+}
