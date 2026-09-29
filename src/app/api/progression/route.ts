@@ -1,31 +1,24 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getProgressionLogsList, addProgressionLogEntry } from "@/lib/data-store";
 
 export async function GET() {
   try {
-    const user = await db.userProfile.findFirst();
-    if (!user) {
-      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
-    }
+    const logs = await getProgressionLogsList();
 
-    const logs = await db.progressionLog.findMany({
-      where: { userId: user.id },
-      orderBy: { eventDate: "desc" },
-    });
-
-    // Compute longitudinal stats
-    const years = Array.from(new Set(logs.map((l) => l.year))).sort((a, b) => a - b);
-    const yearCounts = years.map((y) => ({
+    const years = Array.from(new Set(logs.map((l: any) => l.year))).sort((a: any, b: any) => a - b);
+    const yearCounts = years.map((y: any) => ({
       year: y,
-      total: logs.filter((l) => l.year === y).length,
-      severeOrLifeThreatening: logs.filter((l) => l.year === y && (l.severity === "SEVERE" || l.severity === "LIFE_THREATENING")).length,
+      total: logs.filter((l: any) => l.year === y).length,
+      severeOrLifeThreatening: logs.filter(
+        (l: any) => l.year === y && (l.severity === "SEVERE" || l.severity === "LIFE_THREATENING")
+      ).length,
     }));
 
     const seasonDistribution = {
-      SPRING: logs.filter((l) => l.season === "SPRING").length,
-      SUMMER: logs.filter((l) => l.season === "SUMMER").length,
-      FALL: logs.filter((l) => l.season === "FALL").length,
-      WINTER: logs.filter((l) => l.season === "WINTER").length,
+      SPRING: logs.filter((l: any) => l.season === "SPRING").length,
+      SUMMER: logs.filter((l: any) => l.season === "SUMMER").length,
+      FALL: logs.filter((l: any) => l.season === "FALL").length,
+      WINTER: logs.filter((l: any) => l.season === "WINTER").length,
     };
 
     return NextResponse.json({
@@ -60,26 +53,19 @@ export async function POST(req: Request) {
       notes,
     } = body;
 
-    const user = await db.userProfile.findFirst();
-    if (!user) {
-      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
-    }
+    const calculatedYear =
+      year || (eventDate ? parseInt(eventDate.split("-")[0]) : new Date().getFullYear());
 
-    const calculatedYear = year || (eventDate ? parseInt(eventDate.split("-")[0]) : new Date().getFullYear());
-
-    const newLog = await db.progressionLog.create({
-      data: {
-        userId: user.id,
-        eventDate: eventDate || new Date().toISOString().split("T")[0],
-        season: season || "SPRING",
-        year: calculatedYear,
-        allergenName: allergenName || "Unknown allergen",
-        reactionType: reactionType || "Allergic reaction",
-        severity: severity || "MODERATE",
-        intervention: intervention || "Rest and hydration",
-        environmentalFactors: environmentalFactors || "",
-        notes: notes || "",
-      },
+    const newLog = await addProgressionLogEntry({
+      eventDate: eventDate || new Date().toISOString().split("T")[0],
+      season: season || "SPRING",
+      year: calculatedYear,
+      allergenName: allergenName || "Unknown allergen",
+      reactionType: reactionType || "Allergic reaction",
+      severity: severity || "MODERATE",
+      intervention: intervention || "Rest and hydration",
+      environmentalFactors: environmentalFactors || "",
+      notes: notes || "",
     });
 
     return NextResponse.json(newLog, { status: 201 });

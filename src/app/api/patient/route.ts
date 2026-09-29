@@ -1,27 +1,14 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import {
+  getPatientWithRelations,
+  addPatientAllergy,
+  updatePatientProfile,
+  deletePatientAllergy,
+} from "@/lib/data-store";
 
 export async function GET() {
   try {
-    const user = await db.userProfile.findFirst({
-      include: {
-        allergies: {
-          orderBy: { severity: "desc" },
-        },
-        progressionLogs: {
-          orderBy: { eventDate: "desc" },
-        },
-        scans: {
-          orderBy: { scannedAt: "desc" },
-          take: 10,
-        },
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "No patient profile found" }, { status: 404 });
-    }
-
+    const user = await getPatientWithRelations();
     return NextResponse.json(user);
   } catch (error: any) {
     console.error("GET /api/patient error:", error);
@@ -34,23 +21,14 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, category, severity, reactionDetails, diagnosticType, diagnosedDate, synonyms } = body;
 
-    const user = await db.userProfile.findFirst();
-    if (!user) {
-      return NextResponse.json({ error: "No patient profile found" }, { status: 404 });
-    }
-
-    const newAllergy = await db.allergyItem.create({
-      data: {
-        userId: user.id,
-        name,
-        category: category || "FOOD",
-        severity: severity || "MODERATE",
-        reactionDetails: reactionDetails || "",
-        diagnosticType: diagnosticType || "CLINICAL_HISTORY",
-        diagnosedDate: diagnosedDate || new Date().toISOString().split("T")[0],
-        synonyms: synonyms ? JSON.stringify(synonyms) : JSON.stringify([name]),
-        isVerified: true,
-      },
+    const newAllergy = await addPatientAllergy({
+      name,
+      category: category || "FOOD",
+      severity: severity || "MODERATE",
+      reactionDetails: reactionDetails || "",
+      diagnosticType: diagnosticType || "CLINICAL_HISTORY",
+      diagnosedDate: diagnosedDate || new Date().toISOString().split("T")[0],
+      synonyms: synonyms || [name],
     });
 
     return NextResponse.json(newAllergy, { status: 201 });
@@ -63,27 +41,11 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
-    const { allergyId, profileData, allergyData } = body;
+    const { profileData } = body;
 
     if (profileData) {
-      const user = await db.userProfile.findFirst();
-      if (!user) return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-      const updated = await db.userProfile.update({
-        where: { id: user.id },
-        data: profileData,
-      });
+      const updated = await updatePatientProfile(profileData);
       return NextResponse.json(updated);
-    }
-
-    if (allergyId && allergyData) {
-      const updatedAllergy = await db.allergyItem.update({
-        where: { id: allergyId },
-        data: {
-          ...allergyData,
-          synonyms: allergyData.synonyms ? JSON.stringify(allergyData.synonyms) : undefined,
-        },
-      });
-      return NextResponse.json(updatedAllergy);
     }
 
     return NextResponse.json({ error: "Invalid update payload" }, { status: 400 });
@@ -102,10 +64,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Missing allergy id" }, { status: 400 });
     }
 
-    await db.allergyItem.delete({
-      where: { id: allergyId },
-    });
-
+    await deletePatientAllergy(allergyId);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("DELETE /api/patient error:", error);

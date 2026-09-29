@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { parseProductPackagingWithGemini } from "@/lib/gemini";
 import { analyzeIngredients } from "@/lib/allergy-dictionary";
+import { getPatientWithRelations, addScanHistoryEntry } from "@/lib/data-store";
 
 export async function POST(req: Request) {
   try {
@@ -17,15 +17,7 @@ export async function POST(req: Request) {
       saveToHistory = true,
     } = body;
 
-    const user = await db.userProfile.findFirst({
-      include: {
-        allergies: true,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "No patient profile found" }, { status: 404 });
-    }
+    const user = await getPatientWithRelations();
 
     let ocrText = customOcrText || "";
     let detectedProductName = productName || "Scanned Product";
@@ -42,8 +34,10 @@ export async function POST(req: Request) {
         presetId
       );
       ocrText = ocrText || ocrResult.ocrText;
-      detectedProductName = detectedProductName === "Scanned Product" ? ocrResult.productName : detectedProductName;
-      detectedBrand = detectedBrand === "Consumer Packaged Goods" ? ocrResult.brand : detectedBrand;
+      detectedProductName =
+        detectedProductName === "Scanned Product" ? ocrResult.productName : detectedProductName;
+      detectedBrand =
+        detectedBrand === "Consumer Packaged Goods" ? ocrResult.brand : detectedBrand;
       parsedIngredients = ocrResult.ingredientsList;
       isSimulated = ocrResult.isSimulated;
     }
@@ -51,7 +45,7 @@ export async function POST(req: Request) {
     // Cross-match against patient's active allergies
     const analysis = analyzeIngredients(
       ocrText,
-      user.allergies.map((a) => ({
+      (user?.allergies || []).map((a: any) => ({
         name: a.name,
         severity: a.severity,
         category: a.category,
@@ -61,19 +55,15 @@ export async function POST(req: Request) {
     // Save to user's scan history if requested
     let savedScanId: string | null = null;
     if (saveToHistory) {
-      const newScan = await db.scanHistory.create({
-        data: {
-          userId: user.id,
-          productName: detectedProductName,
-          brand: detectedBrand,
-          verdict: analysis.status,
-          hazardsDetected: JSON.stringify(analysis.matchedHazards.map((h) => `${h.allergenName} (${h.triggerWord})`)),
-          cautionsDetected: JSON.stringify(analysis.cautionAlerts.map((c) => c.context)),
-          rawOcrText: ocrText,
-          ingredientsList: JSON.stringify(analysis.parsedTokens),
-        },
+      savedScanId = await addScanHistoryEntry({
+        productName: detectedProductName,
+        brand: detectedBrand,
+        verdict: analysis.status,
+        hazardsDetected: analysis.matchedHazards.map((h) => `${h.allergenName} (${h.triggerWord})`),
+        cautionsDetected: analysis.cautionAlerts.map((c) => c.context),
+        rawOcrText: ocrText,
+        ingredientsList: analysis.parsedTokens,
       });
-      savedScanId = newScan.id;
     }
 
     return NextResponse.json({

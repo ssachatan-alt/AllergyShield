@@ -11,6 +11,7 @@ import { ScanHistoryView } from "@/components/ScanHistoryView";
 import { PassportModal } from "@/components/PassportModal";
 import { SettingsModal } from "@/components/SettingsModal";
 import { RefreshCw } from "lucide-react";
+import { INITIAL_PATIENT } from "@/lib/sample-data";
 
 export default function AllergyShieldDashboard() {
   const [activeTab, setActiveTab] = useState("matrix");
@@ -67,19 +68,44 @@ export default function AllergyShieldDashboard() {
       if (patientRes.ok) {
         const pData = await patientRes.json();
         setPatientData(pData);
+      } else {
+        setPatientData({
+          ...INITIAL_PATIENT.profile,
+          id: "default-patient",
+          allergies: INITIAL_PATIENT.allergies,
+        });
       }
 
       if (progRes.ok) {
         const prData = await progRes.json();
         setProgressionLogs(prData.logs || []);
+      } else {
+        setProgressionLogs(INITIAL_PATIENT.progressionLogs);
       }
 
       if (scansRes.ok) {
         const scData = await scansRes.json();
         setScanHistory(scData || []);
+      } else {
+        setScanHistory(
+          INITIAL_PATIENT.scans.map((s, i) => ({
+            ...s,
+            id: `scan-${i + 1}`,
+            scannedAt: new Date().toISOString(),
+            hazardsDetected: JSON.stringify(s.hazardsDetected),
+            cautionsDetected: JSON.stringify(s.cautionsDetected),
+            ingredientsList: JSON.stringify(s.ingredientsList),
+          }))
+        );
       }
     } catch (err) {
-      console.error("Failed to load AllergyShield patient data:", err);
+      console.error("Failed to load AllergyShield patient data, using offline fallback:", err);
+      setPatientData({
+        ...INITIAL_PATIENT.profile,
+        id: "default-patient",
+        allergies: INITIAL_PATIENT.allergies,
+      });
+      setProgressionLogs(INITIAL_PATIENT.progressionLogs);
     } finally {
       setIsLoading(false);
     }
