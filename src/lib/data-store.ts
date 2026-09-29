@@ -42,37 +42,32 @@ export interface StoredScan {
 }
 
 interface InMemoryStore {
-  patient: typeof INITIAL_PATIENT.profile & { id: string };
+  patient: {
+    id: string;
+    fullName: string;
+    dob: string;
+    primaryPhysician: string;
+    emergencyContact: string;
+    notes: string;
+  };
   allergies: StoredAllergy[];
   progressionLogs: StoredProgressionLog[];
   scans: StoredScan[];
 }
 
+// Clean slate default state - NO pre-filled dummy allergies or names
 const memoryStore: InMemoryStore = {
   patient: {
-    ...INITIAL_PATIENT.profile,
-    id: "patient-elena-vance-default",
+    id: "default-user-profile",
+    fullName: "My Health Profile",
+    dob: "",
+    primaryPhysician: "",
+    emergencyContact: "",
+    notes: "",
   },
-  allergies: INITIAL_PATIENT.allergies.map((a, i) => ({
-    ...a,
-    id: `allergy-${i + 1}`,
-    userId: "patient-elena-vance-default",
-    synonyms: JSON.stringify(a.synonyms),
-  })),
-  progressionLogs: INITIAL_PATIENT.progressionLogs.map((p, i) => ({
-    ...p,
-    id: `prog-${i + 1}`,
-    userId: "patient-elena-vance-default",
-  })),
-  scans: INITIAL_PATIENT.scans.map((s, i) => ({
-    ...s,
-    id: `scan-${i + 1}`,
-    userId: "patient-elena-vance-default",
-    scannedAt: new Date(Date.now() - (i + 1) * 3600000).toISOString(),
-    hazardsDetected: JSON.stringify(s.hazardsDetected),
-    cautionsDetected: JSON.stringify(s.cautionsDetected),
-    ingredientsList: JSON.stringify(s.ingredientsList),
-  })),
+  allergies: [],
+  progressionLogs: [],
+  scans: [],
 };
 
 export async function getPatientWithRelations() {
@@ -85,73 +80,14 @@ export async function getPatientWithRelations() {
       },
     });
 
-    if (user && user.allergies && user.allergies.length > 0) {
+    if (user) {
       return user;
     }
-
-    if (!user) {
-      try {
-        const newUser = await db.userProfile.create({
-          data: {
-            fullName: INITIAL_PATIENT.profile.fullName,
-            dob: INITIAL_PATIENT.profile.dob,
-            primaryPhysician: INITIAL_PATIENT.profile.primaryPhysician,
-            emergencyContact: INITIAL_PATIENT.profile.emergencyContact,
-            notes: INITIAL_PATIENT.profile.notes,
-          },
-        });
-
-        for (const a of INITIAL_PATIENT.allergies) {
-          await db.allergyItem.create({
-            data: {
-              userId: newUser.id,
-              name: a.name,
-              category: a.category,
-              severity: a.severity,
-              diagnosedDate: a.diagnosedDate,
-              diagnosticType: a.diagnosticType,
-              reactionDetails: a.reactionDetails,
-              synonyms: JSON.stringify(a.synonyms),
-              isVerified: a.isVerified,
-            },
-          });
-        }
-
-        for (const p of INITIAL_PATIENT.progressionLogs) {
-          await db.progressionLog.create({
-            data: {
-              userId: newUser.id,
-              eventDate: p.eventDate,
-              season: p.season,
-              year: p.year,
-              allergenName: p.allergenName,
-              reactionType: p.reactionType,
-              severity: p.severity,
-              intervention: p.intervention,
-              environmentalFactors: p.environmentalFactors,
-              notes: p.notes,
-            },
-          });
-        }
-
-        const seededUser = await db.userProfile.findFirst({
-          where: { id: newUser.id },
-          include: {
-            allergies: { orderBy: { severity: "desc" } },
-            progressionLogs: { orderBy: { eventDate: "desc" } },
-            scans: { orderBy: { scannedAt: "desc" } },
-          },
-        });
-        if (seededUser) return seededUser;
-      } catch (seedErr) {
-        console.warn("DB seed attempt failed (serverless fallback):", seedErr);
-      }
-    }
   } catch (dbErr) {
-    console.warn("Prisma query failed, utilizing resilient serverless store:", dbErr);
+    console.warn("Prisma query skipped (serverless clean state):", dbErr);
   }
 
-  // Resilient fallback for Vercel Serverless
+  // Return clean slate
   return {
     ...memoryStore.patient,
     allergies: memoryStore.allergies,
@@ -170,7 +106,16 @@ export async function addPatientAllergy(data: {
   synonyms?: string[];
 }) {
   try {
-    const user = await db.userProfile.findFirst();
+    let user = await db.userProfile.findFirst();
+    if (!user) {
+      user = await db.userProfile.create({
+        data: {
+          fullName: memoryStore.patient.fullName,
+          dob: memoryStore.patient.dob || "1995-01-01",
+        },
+      });
+    }
+
     if (user) {
       const created = await db.allergyItem.create({
         data: {
@@ -188,7 +133,7 @@ export async function addPatientAllergy(data: {
       return created;
     }
   } catch (err) {
-    console.warn("DB write failed, updating memory store:", err);
+    console.warn("DB write skipped, saving to memory store:", err);
   }
 
   const newAllergy: StoredAllergy = {
@@ -210,9 +155,8 @@ export async function addPatientAllergy(data: {
 export async function deletePatientAllergy(id: string) {
   try {
     await db.allergyItem.delete({ where: { id } });
-    return true;
   } catch (err) {
-    console.warn("DB delete failed, updating memory store:", err);
+    console.warn("DB delete skipped, removing from memory store:", err);
   }
   memoryStore.allergies = memoryStore.allergies.filter((a) => a.id !== id);
   return true;
@@ -228,31 +172,82 @@ export async function updatePatientProfile(profileData: any) {
       });
     }
   } catch (err) {
-    console.warn("DB update failed, updating memory store:", err);
+    console.warn("DB profile update skipped, updating memory store:", err);
   }
   memoryStore.patient = { ...memoryStore.patient, ...profileData };
   return memoryStore.patient;
 }
 
+export async function resetAllUserData() {
+  try {
+    await db.allergyItem.deleteMany({});
+    await db.progressionLog.deleteMany({});
+    await db.scanHistory.deleteMany({});
+  } catch (err) {
+    console.warn("DB reset skipped:", err);
+  }
+  memoryStore.patient = {
+    id: "default-user-profile",
+    fullName: "My Health Profile",
+    dob: "",
+    primaryPhysician: "",
+    emergencyContact: "",
+    notes: "",
+  };
+  memoryStore.allergies = [];
+  memoryStore.progressionLogs = [];
+  memoryStore.scans = [];
+  return true;
+}
+
+export async function loadDemoUserData() {
+  memoryStore.patient = {
+    ...INITIAL_PATIENT.profile,
+    id: "patient-elena-vance-demo",
+  };
+  memoryStore.allergies = INITIAL_PATIENT.allergies.map((a, i) => ({
+    ...a,
+    id: `demo-allergy-${i + 1}`,
+    userId: "patient-elena-vance-demo",
+    synonyms: JSON.stringify(a.synonyms),
+  }));
+  memoryStore.progressionLogs = INITIAL_PATIENT.progressionLogs.map((p, i) => ({
+    ...p,
+    id: `demo-prog-${i + 1}`,
+    userId: "patient-elena-vance-demo",
+  }));
+  memoryStore.scans = INITIAL_PATIENT.scans.map((s, i) => ({
+    ...s,
+    id: `demo-scan-${i + 1}`,
+    userId: "patient-elena-vance-demo",
+    scannedAt: new Date(Date.now() - (i + 1) * 3600000).toISOString(),
+    hazardsDetected: JSON.stringify(s.hazardsDetected),
+    cautionsDetected: JSON.stringify(s.cautionsDetected),
+    ingredientsList: JSON.stringify(s.ingredientsList),
+  }));
+  return getPatientWithRelations();
+}
+
 export async function getProgressionLogsList() {
   try {
-    const user = await db.userProfile.findFirst();
-    if (user) {
-      const logs = await db.progressionLog.findMany({
-        where: { userId: user.id },
-        orderBy: { eventDate: "desc" },
-      });
-      if (logs.length > 0) return logs;
-    }
+    const logs = await db.progressionLog.findMany({
+      orderBy: { eventDate: "desc" },
+    });
+    if (logs && logs.length > 0) return logs;
   } catch (err) {
-    console.warn("DB get logs failed:", err);
+    console.warn("DB get logs skipped:", err);
   }
   return memoryStore.progressionLogs;
 }
 
 export async function addProgressionLogEntry(data: any) {
   try {
-    const user = await db.userProfile.findFirst();
+    let user = await db.userProfile.findFirst();
+    if (!user) {
+      user = await db.userProfile.create({
+        data: { fullName: "My Health Profile", dob: "1995-01-01" },
+      });
+    }
     if (user) {
       return await db.progressionLog.create({
         data: {
@@ -270,7 +265,7 @@ export async function addProgressionLogEntry(data: any) {
       });
     }
   } catch (err) {
-    console.warn("DB log create failed, writing to memory store:", err);
+    console.warn("DB log create skipped:", err);
   }
 
   const newLog: StoredProgressionLog = {
@@ -284,18 +279,15 @@ export async function addProgressionLogEntry(data: any) {
 
 export async function getScanHistoryList(verdictFilter?: string | null) {
   try {
-    const user = await db.userProfile.findFirst();
-    if (user) {
-      const where: any = { userId: user.id };
-      if (verdictFilter && verdictFilter !== "ALL") where.verdict = verdictFilter;
-      const scans = await db.scanHistory.findMany({
-        where,
-        orderBy: { scannedAt: "desc" },
-      });
-      if (scans.length > 0) return scans;
-    }
+    const where: any = {};
+    if (verdictFilter && verdictFilter !== "ALL") where.verdict = verdictFilter;
+    const scans = await db.scanHistory.findMany({
+      where,
+      orderBy: { scannedAt: "desc" },
+    });
+    if (scans && scans.length > 0) return scans;
   } catch (err) {
-    console.warn("DB get scans failed:", err);
+    console.warn("DB get scans skipped:", err);
   }
 
   return verdictFilter && verdictFilter !== "ALL"
@@ -305,7 +297,12 @@ export async function getScanHistoryList(verdictFilter?: string | null) {
 
 export async function addScanHistoryEntry(data: any) {
   try {
-    const user = await db.userProfile.findFirst();
+    let user = await db.userProfile.findFirst();
+    if (!user) {
+      user = await db.userProfile.create({
+        data: { fullName: "My Health Profile", dob: "1995-01-01" },
+      });
+    }
     if (user) {
       const created = await db.scanHistory.create({
         data: {
@@ -322,7 +319,7 @@ export async function addScanHistoryEntry(data: any) {
       return created.id;
     }
   } catch (err) {
-    console.warn("DB add scan failed:", err);
+    console.warn("DB add scan skipped:", err);
   }
 
   const newId = `scan-${Date.now()}`;
@@ -345,9 +342,8 @@ export async function addScanHistoryEntry(data: any) {
 export async function deleteScanHistoryEntry(id: string) {
   try {
     await db.scanHistory.delete({ where: { id } });
-    return true;
   } catch (err) {
-    console.warn("DB delete scan failed:", err);
+    console.warn("DB delete scan skipped:", err);
   }
   memoryStore.scans = memoryStore.scans.filter((s) => s.id !== id);
   return true;
