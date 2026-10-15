@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEIZE ALERT — Cervical-Auricular Active Epilepsy Band</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js for real-time telemetry -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#082f49',
+              dark: '#070b14',
+              surface: '#0f172a',
+              card: '#131d31',
+              border: '#1e293b'
+            },
+            vagus: {
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              glow: 'rgba(168, 85, 247, 0.4)'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Menlo', 'Courier New', 'monospace']
+          },
+          animation: {
+            'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'vagus-glow': 'vagusPulse 1.4s ease-in-out infinite'
+          },
+          keyframes: {
+            vagusPulse: {
+              '0%, 100%': { opacity: '0.4', transform: 'scale(0.98)' },
+              '50%': { opacity: '1', transform: 'scale(1.03)', filter: 'drop-shadow(0 0 12px rgba(168,85,247,0.8))' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+    
+    /* Custom scanline and glowing grid backgrounds */
+    .tech-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+    }
+    
+    .radar-sweep {
+      background: conic-gradient(from 0deg at 50% 50%, rgba(14, 165, 233, 0.15) 0deg, transparent 60deg, transparent 360deg);
+      animation: spin 4s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070b14; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+  </style>
+</head>
+<body class="bg-brand-dark text-slate-100 font-sans antialiased min-h-screen selection:bg-brand-500 selection:text-white">
+
+  <!-- TOP STATUS BAR / NAVIGATION -->
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-brand-dark/85 border-b border-brand-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-vagus-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
+          <i class="ph-bold ph-waveform text-white text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold tracking-wider text-white">SEIZE<span class="text-brand-400">ALERT</span></span>
+          <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded">MedTech NextGen</span>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+        <a href="#overview" class="hover:text-brand-400 transition-colors">Overview</a>
+        <a href="#schematic" class="hover:text-brand-400 transition-colors">Hardware Anatomy</a>
+        <a href="#simulator" class="text-brand-400 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Pitch Demo</a>
+        <a href="#biocompatibility" class="hover:text-brand-400 transition-colors">Anti-Allergic Materials</a>
+        <a href="#economics" class="hover:text-brand-400 transition-colors">Unit Economics</a>
+      </nav>
+
+      <div class="flex items-center space-x-3">
+        <a href="#simulator" class="px-4 py-2 text-xs uppercase font-mono tracking-wider font-bold rounded-lg bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-500 hover:to-brand-400 transition-all shadow-md shadow-brand-500/25 flex items-center gap-2">
+          <i class="ph-bold ph-broadcast"></i> Presenter Mode
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section id="overview" class="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 tech-grid">
+    <!-- Ambient ambient glow -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/3 left-1/3 w-80 h-80 bg-vagus-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-brand-400/30 bg-brand-400/10 text-brand-400 text-xs font-semibold mb-6">
+          <i class="ph-bold ph-shield-check"></i> Breakthrough Innovation in Epilepsy Care
+        </div>
+        
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight sm:leading-none mb-6">
+          World’s First Closed-Loop <br class="hidden sm:inline" />
+          <span class="bg-gradient-to-r from-brand-400 via-sky-300 to-vagus-400 bg-clip-text text-transparent">Cervical Seizure Calming</span> System
+        </h1>
+        
+        <p class="text-lg text-slate-300 mb-8 font-normal leading-relaxed">
+          Standard wristwatches notify loved ones <span class="text-white font-medium italic">after</span> trauma occurs. <span class="text-brand-400 font-semibold">SEIZE ALERT</span> reimagines the form factor: an ergonomic, medical-grade cervical-auricular band that fuses multimodal biosensors with non-invasive <span class="text-vagus-400 font-semibold">auricular tVNS stimulation</span> to suppress seizures while broadcasting live GPS telemetry.
+        </p>
+
+        <!-- Compliance & Feature Badges -->
+        <div class="flex flex-wrap justify-center items-center gap-3 pt-2">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-surface border border-brand-border text-xs text-slate-300">
+            <i class="ph-fill ph-check-circle text-emerald-400"></i> ISO 10993 Biocompatible Silicone
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-surface border border-brand-border text-xs text-slate-300">
+            <i class="ph-fill ph-check-circle text-emerald-400"></i> Zero-Nickel Grade-5 Titanium
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-surface border border-brand-border text-xs text-slate-300">
+            <i class="ph-fill ph-lightning text-vagus-400"></i> 20 Hz Auricular tVNS Suppression
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-surface border border-brand-border text-xs text-slate-300">
+            <i class="ph-fill ph-map-pin text-sky-400"></i> Autonomous LTE-M / GPS Modem
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE DEVICE SCHEMATIC VISUALIZER -->
+  <section id="schematic" class="py-16 bg-brand-surface border-y border-brand-border relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+        <div>
+          <div class="text-brand-400 text-xs font-mono uppercase tracking-widest font-semibold mb-2">Hardware Architecture</div>
+          <h2 class="text-3xl font-bold text-white tracking-tight">Interactive Device Anatomy</h2>
+          <p class="text-slate-400 text-sm mt-1">Click the interactive hotspots on the band to inspect medical component specs.</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex items-center gap-2">
+          <span class="text-xs text-slate-400">Current View:</span>
+          <span class="px-2.5 py-1 rounded bg-brand-dark text-brand-400 text-xs font-mono font-medium border border-brand-border">Cervical-Auricular Assembly</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <!-- SVG Interactive Diagram -->
+        <div class="lg:col-span-7 bg-brand-dark/90 rounded-2xl border border-brand-border p-6 relative overflow-hidden flex items-center justify-center shadow-2xl min-h-[460px]">
+          <!-- Background Subtle Grid -->
+          <div class="absolute inset-0 tech-grid opacity-30 pointer-events-none"></div>
+
+          <!-- Dynamic SVG Schematic -->
+          <svg viewBox="0 0 700 500" class="w-full h-auto max-h-[440px] drop-shadow-2xl selection:bg-transparent" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="bandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#334155" />
+                <stop offset="50%" stop-color="#1e293b" />
+                <stop offset="100%" stop-color="#0f172a" />
+              </linearGradient>
+              <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fde047" />
+                <stop offset="100%" stop-color="#ca8a04" />
+              </linearGradient>
+              <radialGradient id="vagusPulseGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+
+            <!-- Neckband Ergonomic Horseshoe Body -->
+            <path d="M 180 370 C 120 310, 150 160, 350 160 C 550 160, 580 310, 520 370 C 490 400, 450 370, 450 340 C 450 240, 480 210, 350 210 C 220 210, 250 240, 250 340 C 250 370, 210 400, 180 370 Z" 
+                  fill="url(#bandGrad)" stroke="#475569" stroke-width="3" filter="drop-shadow(0 10px 15px rgba(0,0,0,0.6))"/>
+
+            <!-- Right Terminal Housing with OLED Display -->
+            <path d="M 450 340 C 450 410, 530 410, 530 340 Z" fill="#0f172a" stroke="#0ea5e9" stroke-width="2"/>
+            <rect x="465" y="340" width="50" height="25" rx="4" fill="#000" stroke="#38bdf8" stroke-width="1"/>
+            <text x="490" y="356" fill="#38bdf8" font-size="8" font-family="monospace" text-anchor="middle" font-weight="bold">72 BPM</text>
+
+            <!-- Gold Electrodes (EDA / GSR) on interior curve -->
+            <!-- Left Side Dry Electrodes -->
+            <ellipse cx="230" cy="280" rx="9" ry="16" fill="url(#goldGrad)" stroke="#eab308" stroke-width="1.5" class="cursor-pointer hover:opacity-80 transition-all"/>
+            <ellipse cx="210" cy="330" rx="9" ry="16" fill="url(#goldGrad)" stroke="#eab308" stroke-width="1.5" class="cursor-pointer hover:opacity-80 transition-all"/>
+
+            <!-- Right Side Dry Electrodes -->
+            <ellipse cx="470" cy="280" rx="9" ry="16" fill="url(#goldGrad)" stroke="#eab308" stroke-width="1.5" class="cursor-pointer hover:opacity-80 transition-all"/>
+            
+            <!-- PPG Optical Carotid Artery Sensor Windows (Center Neck Spine) -->
+            <rect x="335" y="172" width="30" height="18" rx="4" fill="#020617" stroke="#22c55e" stroke-width="1.5"/>
+            <circle cx="344" cy="181" r="3" fill="#22c55e"/>
+            <circle cx="356" cy="181" r="3" fill="#ef4444"/>
+
+            <!-- Left Auricular Tether Wire -->
+            <path d="M 230 240 Q 230 110, 310 90" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="4 2"/>
+            
+            <!-- Auricular tVNS Earhook Assembly (Tragus/Concha Clip) -->
+            <g id="earhook-element" class="cursor-pointer">
+              <!-- Glow field for intervention state -->
+              <circle id="earhook-glow" cx="330" cy="80" r="35" fill="url(#vagusPulseGlow)" class="opacity-0 transition-opacity duration-300"/>
+              <!-- Silicone Earhook Curve -->
+              <path d="M 310 90 C 310 40, 350 40, 355 80 C 355 100, 345 110, 335 110 C 325 110, 320 100, 325 90" 
+                    fill="none" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
+              <!-- Dual Gold Micro-Pins for Auricular Branch of Vagus Nerve -->
+              <circle cx="332" cy="100" r="3" fill="#eab308" stroke="#ca8a04" stroke-width="1"/>
+              <circle cx="340" cy="100" r="3" fill="#eab308" stroke="#ca8a04" stroke-width="1"/>
+            </g>
+
+            <!-- HOTSPOT INTERACTIVE PINS -->
+            <!-- 1. tVNS Earhook Pin -->
+            <g onclick="selectHotspot('tvns')" class="cursor-pointer group">
+              <circle cx="335" cy="55" r="14" fill="#a855f7" fill-opacity="0.25" class="animate-ping"/>
+              <circle cx="335" cy="55" r="9" fill="#a855f7" stroke="#fff" stroke-width="2"/>
+              <text x="335" y="59" font-size="11" fill="#fff" font-family="sans-serif" font-weight="bold" text-anchor="middle">1</text>
+            </g>
+
+            <!-- 2. EDA Gold Electrodes Pin -->
+            <g onclick="selectHotspot('eda')" class="cursor-pointer group">
+              <circle cx="210" cy="305" r="14" fill="#eab308" fill-opacity="0.25" class="animate-ping"/>
+              <circle cx="210" cy="305" r="9" fill="#eab308" stroke="#fff" stroke-width="2"/>
+              <text x="210" y="309" font-size="11" fill="#000" font-family="sans-serif" font-weight="bold" text-anchor="middle">2</text>
+            </g>
+
+            <!-- 3. Carotid PPG Sensor Pin -->
+            <g onclick="selectHotspot('ppg')" class="cursor-pointer group">
+              <circle cx="350" cy="155" r="14" fill="#22c55e" fill-opacity="0.25" class="animate-ping"/>
+              <circle cx="350" cy="155" r="9" fill="#22c55e" stroke="#fff" stroke-width="2"/>
+              <text x="350" y="159" font-size="11" fill="#fff" font-family="sans-serif" font-weight="bold" text-anchor="middle">3</text>
+            </g>
+
+            <!-- 4. TinyML MCU & LTE-M Modem Pin -->
+            <g onclick="selectHotspot('mcu')" class="cursor-pointer group">
+              <circle cx="490" cy="315" r="14" fill="#0ea5e9" fill-opacity="0.25" class="animate-ping"/>
+              <circle cx="490" cy="315" r="9" fill="#0ea5e9" stroke="#fff" stroke-width="2"/>
+              <text x="490" y="319" font-size="11" fill="#fff" font-family="sans-serif" font-weight="bold" text-anchor="middle">4</text>
+            </g>
+          </svg>
+
+          <!-- Floating Helper Tag -->
+          <div class="absolute bottom-4 left-4 bg-brand-surface/90 border border-brand-border px-3 py-1.5 rounded-lg text-xs font-mono text-slate-300 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-400"></span> Tap numbered hotspots to inspect
+          </div>
+        </div>
+
+        <!-- Hotspot Detail Panel -->
+        <div class="lg:col-span-5 bg-brand-card rounded-2xl border border-brand-border p-6 shadow-xl relative min-h-[460px] flex flex-col justify-between">
+          <div id="hotspot-content">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-vagus-500/20 text-vagus-400 text-xs font-mono font-semibold mb-3 border border-vagus-500/30" id="hs-badge">
+              MODULE 01 // ACTIVE INTERVENTION
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-2" id="hs-title">Auricular tVNS Earhook Module</h3>
+            <p class="text-slate-300 text-sm leading-relaxed mb-6" id="hs-desc">
+              Non-invasive Transcutaneous Vagus Nerve Stimulation (tVNS) delivery arm. When the Edge AI identifies pre-ictal bio-rhythms, it delivers calibrated biphasic 20 Hz square-wave pulses to the cymba conchae of the outer ear, triggering afferent pathways to calm hyper-synchronous thalamocortical discharges.
+            </p>
+
+            <div class="space-y-3 font-mono text-xs border-t border-brand-border pt-4" id="hs-specs">
+              <div class="flex justify-between py-1 border-b border-brand-border/50">
+                <span class="text-slate-400">Anatomical Target:</span>
+                <span class="text-brand-400 font-semibold">Auricular Branch of Vagus Nerve (ABVN)</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-brand-border/50">
+                <span class="text-slate-400">Frequency & Pulse:</span>
+                <span class="text-white">20 Hz Biphasic / 200 µs Width</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-brand-border/50">
+                <span class="text-slate-400">Safety Cutoff:</span>
+                <span class="text-emerald-400">Automatic 30s Hardware Current Limiter</span>
+              </div>
+              <div class="flex justify-between py-1">
+                <span class="text-slate-400">Contact Interface:</span>
+                <span class="text-white">Hypoallergenic Gold-Plated Pogo Beads</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hotspot Selection Buttons -->
+          <div class="pt-6 border-t border-brand-border mt-6">
+            <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2">Quick Component Select</div>
+            <div class="grid grid-cols-4 gap-2">
+              <button onclick="selectHotspot('tvns')" class="px-2 py-2 text-xs font-mono rounded bg-vagus-600/20 text-vagus-400 border border-vagus-500/40 hover:bg-vagus-600/30 transition text-center font-bold">1: tVNS</button>
+              <button onclick="selectHotspot('eda')" class="px-2 py-2 text-xs font-mono rounded bg-brand-surface text-amber-400 border border-brand-border hover:bg-brand-border transition text-center font-bold">2: EDA</button>
+              <button onclick="selectHotspot('ppg')" class="px-2 py-2 text-xs font-mono rounded bg-brand-surface text-emerald-400 border border-brand-border hover:bg-brand-border transition text-center font-bold">3: PPG</button>
+              <button onclick="selectHotspot('mcu')" class="px-2 py-2 text-xs font-mono rounded bg-brand-surface text-brand-400 border border-brand-border hover:bg-brand-border transition text-center font-bold">4: Edge</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE INTERACTIVE PITCH SIMULATOR (DEMO CENTER) -->
+  <section id="simulator" class="py-16 tech-grid relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Pitch Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-bold tracking-wider uppercase mb-3">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Evaluation Bench
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Closed-Loop Pitch Simulator</h2>
+        <p class="text-slate-300 text-sm mt-2">
+          Experience the autonomous cycle: from early autonomic pre-ictal detection to active auricular calming and instant GPS dispatch.
+        </p>
+      </div>
+
+      <!-- Presenter Action Controls -->
+      <div class="bg-brand-card border border-brand-border rounded-2xl p-4 sm:p-6 mb-8 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <button id="btn-trigger" onclick="startSeizureSim()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-sm shadow-lg shadow-red-500/25 flex items-center gap-2 transition transform active:scale-95">
+            <i class="ph-bold ph-lightning"></i> Trigger Seizure Event Simulation
+          </button>
+          <button id="btn-cancel" onclick="resetToBaseline()" class="px-4 py-2.5 rounded-xl bg-brand-surface hover:bg-brand-border text-slate-200 border border-brand-border font-medium text-sm flex items-center gap-2 transition">
+            <i class="ph-bold ph-arrow-counter-clockwise"></i> Reset / Patient Cancel
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-mono text-slate-400">Simulation Speed:</span>
+          <span class="px-2.5 py-1 rounded bg-brand-surface border border-brand-border text-xs font-mono text-brand-400 font-semibold">1.0x Realtime</span>
+          <button onclick="toggleAudioFeedback()" id="audio-toggle-btn" class="p-2 rounded-lg bg-brand-surface border border-brand-border text-slate-400 hover:text-white transition" title="Toggle Biosensor Acoustic Feedback">
+            <i class="ph-bold ph-speaker-high" id="audio-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Telemetry Matrix -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Metric 1: Heart Rate -->
+        <div class="bg-brand-card rounded-xl border border-brand-border p-5 relative overflow-hidden">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider">Carotid Heart Rate</span>
+            <i class="ph-fill ph-heart text-red-500 text-xl" id="heart-icon"></i>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-4xl font-extrabold text-white font-mono" id="val-bpm">72</span>
+            <span class="text-sm font-mono text-slate-400">BPM</span>
+          </div>
+          <div class="text-[11px] font-mono mt-2 text-slate-400" id="val-bpm-status">Resting Autonomic Tone</div>
+          <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-brand-500" id="bpm-bar"></div>
+        </div>
+
+        <!-- Metric 2: Skin Conductance (EDA) -->
+        <div class="bg-brand-card rounded-xl border border-brand-border p-5 relative overflow-hidden">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider">Galvanic Skin (EDA)</span>
+            <i class="ph-fill ph-drop text-amber-400 text-xl"></i>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-4xl font-extrabold text-white font-mono" id="val-eda">3.2</span>
+            <span class="text-sm font-mono text-slate-400">μS</span>
+          </div>
+          <div class="text-[11px] font-mono mt-2 text-slate-400" id="val-eda-status">Sympathetic Baseline</div>
+          <div class="absolute bottom-0 left-0 right-0 h-1 bg-amber-500" id="eda-bar"></div>
+        </div>
+
+        <!-- Metric 3: Cervical 9-Axis Kinetic Acceleration -->
+        <div class="bg-brand-card rounded-xl border border-brand-border p-5 relative overflow-hidden">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider">Cervical Motion (IMU)</span>
+            <i class="ph-fill ph-activity text-brand-400 text-xl"></i>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-4xl font-extrabold text-white font-mono" id="val-accel">1.02</span>
+            <span class="text-sm font-mono text-slate-400">G-Force</span>
+          </div>
+          <div class="text-[11px] font-mono mt-2 text-slate-400" id="val-accel-status">Zero Clonus Signature</div>
+          <div class="absolute bottom-0 left-0 right-0 h-1 bg-brand-500" id="accel-bar"></div>
+        </div>
+
+        <!-- Metric 4: Vagal Stimulation Voltage -->
+        <div class="bg-brand-card rounded-xl border border-brand-border p-5 relative overflow-hidden">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider">tVNS Stimulation</span>
+            <i class="ph-bold ph-sparkle text-vagus-400 text-xl" id="vagus-indicator-icon"></i>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-4xl font-extrabold text-white font-mono" id="val-stim">0.0</span>
+            <span class="text-sm font-mono text-slate-400">mA</span>
+          </div>
+          <div class="text-[11px] font-mono mt-2 text-slate-400" id="val-stim-status">Suppression Inactive</div>
+          <div class="absolute bottom-0 left-0 right-0 h-1 bg-slate-700" id="stim-bar"></div>
+        </div>
+      </div>
+
+      <!-- State Transition Banner -->
+      <div id="status-card" class="bg-brand-card border-2 border-emerald-500/50 rounded-2xl p-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300">
+        <div class="flex items-center gap-4">
+          <div id="status-indicator-badge" class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-2xl font-bold flex-shrink-0">
+            <i class="ph-bold ph-shield-check" id="status-icon"></i>
+          </div>
+          <div>
+            <div class="text-xs font-mono text-slate-400 uppercase tracking-widest font-semibold" id="status-phase-text">STATE 01 // PASSIVE MONITORING</div>
+            <div class="text-xl font-bold text-white mt-0.5" id="status-headline">Patient Vitals Normal — Autonomic Tone Stable</div>
+            <div class="text-xs text-slate-300 mt-1" id="status-subtext">No aberrant rhythmic clonic oscillations detected. Edge AI model idling at 1.4 mW.</div>
+          </div>
+        </div>
+
+        <!-- Countdown / Micro-action pill -->
+        <div id="intervention-pill" class="hidden px-4 py-2 rounded-xl bg-vagus-500/20 border border-vagus-500 text-vagus-300 font-mono text-xs flex items-center gap-2 self-start md:self-auto">
+          <span class="w-2.5 h-2.5 rounded-full bg-vagus-400 animate-ping"></span>
+          <span id="intervention-status-text">tVNS Active: 20 Hz Square Pulses</span>
+        </div>
+      </div>
+
+      <!-- Waveform Charts & Emergency Dispatch Simulated Phone Screen -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Live Kinetic & Autonomic Waveform -->
+        <div class="lg:col-span-8 bg-brand-card rounded-2xl border border-brand-border p-6 shadow-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="ph-bold ph-chart-line text-brand-400"></i> Real-Time Multi-Sensor Telemetry Stream
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5 font-mono">Sensors: Carotid Pulse + Sympathetic EDA + Tri-Axial Clonus</p>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-mono">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-1 bg-red-400 rounded-sm"></span> HR (BPM)</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-1 bg-sky-400 rounded-sm"></span> G-Force</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-1 bg-amber-400 rounded-sm"></span> EDA (µS)</span>
+            </div>
+          </div>
+
+          <div class="w-full h-64">
+            <canvas id="telemetryChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Simulated Emergency Dispatch Card -->
+        <div class="lg:col-span-4 bg-brand-surface rounded-2xl border border-brand-border p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+              <div class="flex items-center gap-2 text-xs font-mono font-bold text-slate-300">
+                <i class="ph-bold ph-device-mobile text-brand-400"></i> Caregiver Emergency Dispatch
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-dark text-slate-400 border border-brand-border">LTE-M Active</span>
+            </div>
+
+            <div class="mt-4 space-y-3">
+              <!-- Dispatch SMS Bubble -->
+              <div class="p-3.5 rounded-xl bg-brand-dark border border-brand-border text-xs leading-relaxed" id="dispatch-bubble">
+                <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1.5">
+                  <span class="text-rose-400 font-bold" id="sms-sender">SEIZE ALERT AUTOMATED SOS</span>
+                  <span id="sms-time">14:23 IST</span>
+                </div>
+                <p class="text-slate-200" id="sms-body">
+                  STANDBY: Patient telemetry normal. Live GPS standby at latitude 13.0334, longitude 80.1812 (Chennai, TN).
+                </p>
+                <div id="sms-location-preview" class="mt-2.5 p-2 rounded bg-brand-surface/80 border border-brand-border flex items-center gap-2 text-[11px] text-brand-400 font-mono">
+                  <i class="ph-fill ph-map-pin text-rose-500"></i> Live Satellite Geofence: Active
+                </div>
+              </div>
+
+              <!-- Automated Dispatch Log -->
+              <div class="space-y-1.5 font-mono text-[11px] pt-1">
+                <div class="flex justify-between text-slate-400">
+                  <span>Cloud Uplink:</span>
+                  <span class="text-emerald-400 font-semibold" id="dispatch-cloud-status">Connected (eSIM)</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                  <span>GPS Fix:</span>
+                  <span class="text-white font-semibold">13.0334° N, 80.1812° E</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                  <span>Paramedic Relay:</span>
+                  <span class="text-slate-400" id="dispatch-paramedic-status">Standby</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="resetToBaseline()" class="w-full mt-4 py-2.5 rounded-xl bg-brand-dark hover:bg-brand-card border border-brand-border text-xs font-mono text-slate-300 font-semibold flex items-center justify-center gap-2 transition">
+            <i class="ph-bold ph-check"></i> False Alarm? Double-Tap to Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BIOCOMPATIBILITY & MATERIAL SAFETY SHOWCASE -->
+  <section id="biocompatibility" class="py-16 bg-brand-surface border-y border-brand-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <div class="text-brand-400 text-xs font-mono uppercase tracking-widest font-semibold mb-2">Zero-Irritation Engineering</div>
+        <h2 class="text-3xl font-bold text-white tracking-tight">Engineered for 24/7 Hypoallergenic Comfort</h2>
+        <p class="text-slate-300 text-sm mt-2">
+          Contact dermatitis and metal allergy are the leading reasons patients abandon continuous neurological wearables. SEIZE ALERT strictly adheres to medical standards.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card 1 -->
+        <div class="bg-brand-card rounded-2xl border border-brand-border p-6 shadow-lg hover:border-brand-500/50 transition">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center text-2xl mb-5">
+            <i class="ph-bold ph-shield-check"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">USP Class VI Liquid Silicone</h3>
+          <p class="text-slate-300 text-xs leading-relaxed mb-4">
+            The cervical collar is molded from 100% medical-grade Liquid Silicone Rubber (LSR). It is latex-free, chemically non-porous, and resistant to sweat buildup during day and night wear.
+          </p>
+          <span class="inline-block px-2.5 py-1 rounded bg-brand-surface text-brand-400 text-[11px] font-mono border border-brand-border">ISO 10993 Cytotoxicity Tested</span>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-brand-card rounded-2xl border border-brand-border p-6 shadow-lg hover:border-vagus-500/50 transition">
+          <div class="w-12 h-12 rounded-xl bg-vagus-500/10 text-vagus-400 border border-vagus-500/20 flex items-center justify-center text-2xl mb-5">
+            <i class="ph-bold ph-atom"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">Zero-Nickel Ceramic & Titanium</h3>
+          <p class="text-slate-300 text-xs leading-relaxed mb-4">
+            Nickel is the leading allergen in consumer smart bands. All structural hinges and skin-facing case backings use Grade-5 Surgical Titanium and biocompatible Zirconia ceramic (ZrO2).
+          </p>
+          <span class="inline-block px-2.5 py-1 rounded bg-brand-surface text-vagus-400 text-[11px] font-mono border border-brand-border">100% Nickel-Free Mandate</span>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-brand-card rounded-2xl border border-brand-border p-6 shadow-lg hover:border-amber-500/50 transition">
+          <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-2xl mb-5">
+            <i class="ph-bold ph-circles-three"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">Dry Gold-Plated Electrodes</h3>
+          <p class="text-slate-300 text-xs leading-relaxed mb-4">
+            Eliminates clinical sticky Ag/AgCl wet gels that dry out and trigger chemical burns over 24 hours. Solid 4µm gold flash-plated electrodes sample EDA through natural micro-perspiration.
+          </p>
+          <span class="inline-block px-2.5 py-1 rounded bg-brand-surface text-amber-400 text-[11px] font-mono border border-brand-border">Gel-Free Dry Contact</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH SPECS & UNIT ECONOMICS TABLE -->
+  <section id="economics" class="py-16 tech-grid">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <div class="text-brand-400 text-xs font-mono uppercase tracking-widest font-semibold mb-2">Investor & Pitch Economics</div>
+        <h2 class="text-3xl font-bold text-white tracking-tight">Comparative Market Advantage</h2>
+        <p class="text-slate-300 text-sm mt-2">
+          Bridging the gap between ₹30,000+ passive commercial alarms and non-invasive therapeutic intervention.
+        </p>
+      </div>
+
+      <div class="bg-brand-card rounded-2xl border border-brand-border overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-brand-surface border-b border-brand-border font-mono text-xs uppercase text-slate-400">
+              <tr>
+                <th class="py-4 px-6">Feature / Specification</th>
+                <th class="py-4 px-6 text-brand-400 font-bold bg-brand-500/10 border-x border-brand-border">SEIZE ALERT (Our System)</th>
+                <th class="py-4 px-6">Standard Smartwatches</th>
+                <th class="py-4 px-6">Clinical Seizure Bands</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-brand-border text-slate-300 font-normal">
+              <tr>
+                <td class="py-4 px-6 font-medium text-white">Seizure Intervention</td>
+                <td class="py-4 px-6 bg-brand-500/5 border-x border-brand-border text-vagus-400 font-bold flex items-center gap-1.5">
+                  <i class="ph-bold ph-check-circle text-vagus-400"></i> Active Auricular tVNS Calming
+                </td>
+                <td class="py-4 px-6 text-slate-400">None (Passive Only)</td>
+                <td class="py-4 px-6 text-slate-400">None (Alarm Only)</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-6 font-medium text-white">Form Factor & Stability</td>
+                <td class="py-4 px-6 bg-brand-500/5 border-x border-brand-border text-white font-semibold">Cervical-Auricular (Secure in Fall)</td>
+                <td class="py-4 px-6">Wrist (High Motion Artifacts)</td>
+                <td class="py-4 px-6">Wrist Band</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-6 font-medium text-white">False Positive Rejection</td>
+                <td class="py-4 px-6 bg-brand-500/5 border-x border-brand-border text-white">Carotid PPG + EDA + 9-Axis Clonus TinyML</td>
+                <td class="py-4 px-6">Motion Accelerometer only</td>
+                <td class="py-4 px-6">Wrist EDA + Accelerometer</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-6 font-medium text-white">Emergency Dispatch</td>
+                <td class="py-4 px-6 bg-brand-500/5 border-x border-brand-border text-white">Direct Standalone eSIM LTE-M + GNSS</td>
+                <td class="py-4 px-6">Requires Paired Phone Nearby</td>
+                <td class="py-4 px-6">Requires Bluetooth Phone Link</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-6 font-medium text-white">Biocompatibility</td>
+                <td class="py-4 px-6 bg-brand-500/5 border-x border-brand-border text-emerald-400 font-semibold">100% Anti-Allergic Silicone & Titanium</td>
+                <td class="py-4 px-6">Frequent Nickel Contact Allergy</td>
+                <td class="py-4 px-6">Medical Silicone / Fabric</td>
+              </tr>
+              <tr class="bg-brand-surface/40">
+                <td class="py-5 px-6 font-bold text-white">Target Production Cost (COGS)</td>
+                <td class="py-5 px-6 bg-brand-500/10 border-x border-brand-border text-emerald-400 font-mono font-bold text-base">₹3,800 – ₹4,600</td>
+                <td class="py-5 px-6 font-mono text-slate-400">~₹10,000+</td>
+                <td class="py-5 px-6 font-mono text-slate-400">~₹7,500 – ₹9,200</td>
+              </tr>
+              <tr class="bg-brand-surface/80">
+                <td class="py-5 px-6 font-bold text-white">Retail / Patient Price</td>
+                <td class="py-5 px-6 bg-brand-500/15 border-x border-brand-border text-brand-400 font-mono font-extrabold text-lg">₹11,999</td>
+                <td class="py-5 px-6 font-mono text-slate-400">₹25,000 – ₹42,000</td>
+                <td class="py-5 px-6 font-mono text-slate-400">₹30,000+ & Monthly Subs</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PITCH FOOTER -->
+  <footer class="bg-brand-dark border-t border-brand-border py-12 text-slate-400 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-vagus-500 flex items-center justify-center text-white">
+          <i class="ph-bold ph-waveform"></i>
+        </div>
+        <span class="text-base font-bold text-white tracking-wider">SEIZE ALERT</span>
+        <span class="text-[11px] text-slate-400">| Closed-Loop Neuro-Therapeutic Device Innovation</span>
+      </div>
+      <div class="flex items-center space-x-6 text-slate-400 font-mono">
+        <span>Confidential Pitch Deck Companion</span>
+        <span>•</span>
+        <span>Target Class: Class IIa / B Medical Device</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- TELEMETRY & SIMULATOR SCRIPT -->
+  <script>
+    // --- HOTSPOT SPECIFICATIONS DATA ---
+    const hotspotData = {
+      tvns: {
+        badge: "MODULE 01 // ACTIVE INTERVENTION",
+        title: "Auricular tVNS Earhook Module",
+        desc: "Non-invasive Transcutaneous Vagus Nerve Stimulation (tVNS) delivery arm. When the Edge AI identifies pre-ictal bio-rhythms, it delivers calibrated biphasic 20 Hz square-wave pulses to the cymba conchae of the outer ear, triggering afferent pathways to calm hyper-synchronous thalamocortical discharges.",
+        specs: [
+          { k: "Anatomical Target:", v: "Auricular Branch of Vagus Nerve (ABVN)" },
+          { k: "Frequency & Pulse:", v: "20 Hz Biphasic / 200 µs Width" },
+          { k: "Safety Cutoff:", v: "Automatic 30s Hardware Current Limiter" },
+          { k: "Contact Interface:", v: "Hypoallergenic Gold-Plated Pogo Beads" }
+        ]
+      },
+      eda: {
+        badge: "MODULE 02 // AUTONOMIC SENSING",
+        title: "Gold-Plated Dry EDA / GSR Electrodes",
+        desc: "Measures micro-surges in sympathetic electrodermal conductance. During pre-ictal auras, acute sympathetic arousal induces rapid micro-sweat gland activation at the cervical dermatomes before physical convulsing occurs.",
+        specs: [
+          { k: "Electrode Material:", v: "Zero-Nickel Gold-Plated (4 µm)" },
+          { k: "Measurement Domain:", v: "Skin Conductance Response (0.1–20 µS)" },
+          { k: "Sampling Frequency:", v: "16 Hz Continuous Analog Front-End" },
+          { k: "Biocompatibility:", v: "USP Class VI Dry Gel-Free Contact" }
+        ]
+      },
+      ppg: {
+        badge: "MODULE 03 // VASCULAR TELEMETRY",
+        title: "Carotid Optical PPG & SpO2 Window",
+        desc: "Strategically positioned at the back of the neck near the carotid artery tree. Captures instantaneous heart rate jumps (ictal tachycardia) and acute drops in SpO2 with drastically lower movement distortion than wrist-worn sensors.",
+        specs: [
+          { k: "Wavelengths:", v: "Green (525nm), Red (660nm) & IR (880nm)" },
+          { k: "Ictal Marker:", v: "Sudden +35 BPM Spike + HRV Collapse" },
+          { k: "Lens Material:", v: "Medical Grade Sapphire Crystal Glass" },
+          { k: "Ambient Rejection:", v: "Integrated 50/60 Hz Optical Notch Filter" }
+        ]
+      },
+      mcu: {
+        badge: "MODULE 04 // EMBEDDED COMPUTING",
+        title: "Edge TinyML MCU & Standalone LTE-M",
+        desc: "Dual-core low-power microcontroller executing an embedded 1D-CNN motion-and-vital classifier. Pairs with an integrated eSIM module for direct SMS emergency dispatch without needing a phone nearby.",
+        specs: [
+          { k: "Processor:", v: "Nordic nRF5340 / ESP32-S3 Vector Unit" },
+          { k: "Model Latency:", v: "< 28 ms Ingestion & Decision Cycle" },
+          { k: "Cellular & GPS:", v: "LTE-M / NB-IoT + Integrated GNSS" },
+          { k: "Battery Life:", v: "Up to 36 Hours Active Monitoring" }
+        ]
+      }
+    };
+
+    function selectHotspot(key) {
+      const data = hotspotData[key];
+      if (!data) return;
+      document.getElementById('hs-badge').innerText = data.badge;
+      document.getElementById('hs-title').innerText = data.title;
+      document.getElementById('hs-desc').innerText = data.desc;
+      
+      let specsHtml = '';
+      data.specs.forEach(s => {
+        specsHtml += `
+          <div class="flex justify-between py-1 border-b border-brand-border/50">
+            <span class="text-slate-400">${s.k}</span>
+            <span class="text-brand-400 font-semibold">${s.v}</span>
+          </div>`;
+      });
+      document.getElementById('hs-specs').innerHTML = specsHtml;
+    }
+
+    // --- CHART.JS REAL-TIME SETUP ---
+    const ctx = document.getElementById('telemetryChart').getContext('2d');
+    const MAX_POINTS = 30;
+    const initialLabels = Array(MAX_POINTS).fill('');
+    const bpmHistory = Array(MAX_POINTS).fill(72);
+    const accelHistory = Array(MAX_POINTS).fill(1.0);
+    const edaHistory = Array(MAX_POINTS).fill(3.2);
+
+    const telemetryChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: initialLabels,
+        datasets: [
+          {
+            label: 'Heart Rate (BPM)',
+            data: bpmHistory,
+            borderColor: '#f87171',
+            backgroundColor: 'rgba(248, 113, 113, 0.08)',
+            borderWidth: 2,
+            tension: 0.35,
+            yAxisID: 'y'
+          },
+          {
+            label: 'G-Force (G)',
+            data: accelHistory,
+            borderColor: '#38bdf8',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.2,
+            yAxisID: 'y1'
+          },
+          {
+            label: 'EDA Conductance (µS)',
+            data: edaHistory,
+            borderColor: '#fbbf24',
+            backgroundColor: 'transparent',
+            borderWidth: 1.8,
+            borderDash: [4, 4],
+            tension: 0.3,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 180 },
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          x: { display: false },
+          y: {
+            type: 'linear',
+            position: 'left',
+            min: 50,
+            max: 160,
+            grid: { color: '#1e293b' },
+            ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } }
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            min: 0,
+            max: 12,
+            grid: { display: false },
+            ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    // --- SOUND SYNTHESIS (WEB AUDIO API - NO EXTERNAL ASSETS) ---
+    let audioCtx = null;
+    let audioMuted = false;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function toggleAudioFeedback() {
+      audioMuted = !audioMuted;
+      const icon = document.getElementById('audio-icon');
+      if (audioMuted) {
+        icon.className = 'ph-bold ph-speaker-simple-slash text-rose-400';
+      } else {
+        icon.className = 'ph-bold ph-speaker-high text-white';
+      }
+    }
+
+    function playBeep(freq, type = 'sine', duration = 0.08) {
+      if (audioMuted) return;
+      try {
+        const ac = getAudioContext();
+        if (ac.state === 'suspended') ac.resume();
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.08, ac.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        osc.start();
+        osc.stop(ac.currentTime + duration);
+      } catch (e) {}
+    }
+
+    // --- CLOSED-LOOP STATE MACHINE SIMULATION ---
+    const SIM_STATES = {
+      NORMAL: 0,
+      PRE_ICTAL_AURA: 1,
+      ICTAL_CONVULSION: 2,
+      TVNS_CALMING: 3,
+      DISPATCH_RESOLVED: 4
+    };
+
+    let currentSimState = SIM_STATES.NORMAL;
+    let simTimer = null;
+    let tickCount = 0;
+
+    let telemetry = {
+      bpm: 72,
+      eda: 3.2,
+      accel: 1.02,
+      stimCurrent: 0.0
+    };
+
+    function startSeizureSim() {
+      // Disable trigger button during simulation flow
+      document.getElementById('btn-trigger').disabled = true;
+      document.getElementById('btn-trigger').classList.add('opacity-50', 'cursor-not-allowed');
+
+      // Stage 1: Aura triggers after 1.5s
+      setTimeout(() => {
+        if (currentSimState === SIM_STATES.NORMAL) {
+          enterState(SIM_STATES.PRE_ICTAL_AURA);
+        }
+      }, 1500);
+
+      // Stage 2: Full Tonic-Clonic Seizure after 4.5s
+      setTimeout(() => {
+        if (currentSimState === SIM_STATES.PRE_ICTAL_AURA) {
+          enterState(SIM_STATES.ICTAL_CONVULSION);
+        }
+      }, 5500);
+
+      // Stage 3: Active tVNS Calming pulses trigger after 8.5s
+      setTimeout(() => {
+        if (currentSimState === SIM_STATES.ICTAL_CONVULSION) {
+          enterState(SIM_STATES.TVNS_CALMING);
+        }
+      }, 9500);
+
+      // Stage 4: Emergency Dispatch Sent & Seizure blunted after 14s
+      setTimeout(() => {
+        if (currentSimState === SIM_STATES.TVNS_CALMING) {
+          enterState(SIM_STATES.DISPATCH_RESOLVED);
+        }
+      }, 14500);
+    }
+
+    function enterState(state) {
+      currentSimState = state;
+      const statusCard = document.getElementById('status-card');
+      const icon = document.getElementById('status-icon');
+      const badge = document.getElementById('status-indicator-badge');
+      const phase = document.getElementById('status-phase-text');
+      const headline = document.getElementById('status-headline');
+      const subtext = document.getElementById('status-subtext');
+      const pill = document.getElementById('intervention-pill');
+      const earGlow = document.getElementById('earhook-glow');
+
+      switch(state) {
+        case SIM_STATES.PRE_ICTAL_AURA:
+          statusCard.className = "bg-brand-card border-2 border-amber-500 rounded-2xl p-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 shadow-lg shadow-amber-500/10";
+          badge.className = "w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center text-2xl font-bold flex-shrink-0";
+          icon.className = "ph-bold ph-warning";
+          phase.innerText = "STATE 02 // PRE-ICTAL AURA IDENTIFIED";
+          headline.innerText = "Sympathetic Surge Detected — Acute EDA Spike";
+          subtext.innerText = "Electrodermal conductance doubled with heart rate elevation. Arming tVNS suppression circuit.";
+          pill.classList.add('hidden');
+          earGlow.classList.add('opacity-0');
+          playBeep(440, 'triangle', 0.2);
+          break;
+
+        case SIM_STATES.ICTAL_CONVULSION:
+          statusCard.className = "bg-brand-card border-2 border-rose-500 rounded-2xl p-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 shadow-xl shadow-rose-500/20 animate-pulse";
+          badge.className = "w-12 h-12 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center text-2xl font-bold flex-shrink-0";
+          icon.className = "ph-bold ph-lightning";
+          phase.innerText = "STATE 03 // SUSTAINED TONIC-CLONIC SEIZURE";
+          headline.innerText = "Tonic-Clonic Clonus Verified (3–6 Hz Rhythm)";
+          subtext.innerText = "Kinetic jerk acceleration > 2.8G + Tachycardia spike (>130 BPM). Patient fall risk imminent.";
+          pill.classList.add('hidden');
+          earGlow.classList.add('opacity-0');
+          playBeep(880, 'square', 0.4);
+          break;
+
+        case SIM_STATES.TVNS_CALMING:
+          statusCard.className = "bg-brand-card border-2 border-vagus-500 rounded-2xl p-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 shadow-xl shadow-vagus-500/30";
+          badge.className = "w-12 h-12 rounded-xl bg-vagus-500/20 text-vagus-400 border border-vagus-500/40 flex items-center justify-center text-2xl font-bold flex-shrink-0";
+          icon.className = "ph-bold ph-sparkle animate-spin";
+          phase.innerText = "STATE 04 // ACTIVE NEUROMODULATION ENGAGED";
+          headline.innerText = "⚡ Auricular tVNS Active: Calming Thalamic Firing";
+          subtext.innerText = "Micro-pulses delivered to Cymba Conchae vagal fibers to blunt hyper-synchronous cerebral discharge.";
+          pill.classList.remove('hidden');
+          earGlow.classList.remove('opacity-0');
+          playBeep(620, 'sine', 0.15);
+          break;
+
+        case SIM_STATES.DISPATCH_RESOLVED:
+          statusCard.className = "bg-brand-card border-2 border-brand-500 rounded-2xl p-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300";
+          badge.className = "w-12 h-12 rounded-xl bg-brand-500/20 text-brand-400 border border-brand-500/40 flex items-center justify-center text-2xl font-bold flex-shrink-0";
+          icon.className = "ph-bold ph-paper-plane-tilt";
+          phase.innerText = "STATE 05 // AUTONOMOUS EMERGENCY DISPATCH COMPLETED";
+          headline.innerText = "Seizure Blunted & Stabilizing — GPS Dispatched";
+          subtext.innerText = "Vitals subsiding toward autonomic baseline. Live location transmitted to caregivers via LTE-M.";
+          pill.classList.add('hidden');
+          earGlow.classList.add('opacity-0');
+
+          // Trigger simulated SMS update
+          triggerEmergencySMS();
+          playBeep(520, 'triangle', 0.25);
+          break;
+      }
+    }
+
+    function triggerEmergencySMS() {
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} IST`;
+      document.getElementById('sms-time').innerText = timeStr;
+      document.getElementById('sms-sender').innerText = "🚨 SEIZE ALERT: EMERGENCY DISPATCH";
+      document.getElementById('sms-body').innerHTML = `
+        <strong>CRITICAL SEIZURE ALERT:</strong><br>
+        Tonic-clonic event detected for Patient #821.<br>
+        Auricular tVNS deployed (duration: 12s). Patient vitals recovering.<br>
+        <strong>Live Coordinates:</strong> Lat 13.0334, Lng 80.1812 (Chennai, TN).
+      `;
+      document.getElementById('sms-location-preview').innerHTML = `
+        <i class="ph-fill ph-map-pin text-rose-500"></i> Google Maps Pin: maps.google.com/?q=13.0334,80.1812
+      `;
+      document.getElementById('dispatch-cloud-status').innerText = "ALERT BROADCASTED";
+      document.getElementById('dispatch-cloud-status').className = "text-rose-400 font-bold";
+      document.getElementById('dispatch-paramedic-status').innerText = "Notified (SMS/Push)";
+      document.getElementById('dispatch-paramedic-status').className = "text-emerald-400 font-semibold";
+    }
+
+    function resetToBaseline() {
+      currentSimState = SIM_STATES.NORMAL;
+      
+      const statusCard = document.getElementById('status-card');
+      const icon = document.getElementById('status-icon');
+      const badge = document.getElementById('status-indicator-badge');
+      const phase = document.getElementById('status-phase-text');
+      const headline = document.getElementById('status-headline');
+      const subtext = document.getElementById('status-subtext');
+      const pill = document.getElementById('intervention-pill');
+      const earGlow = document.getElementById('earhook-glow');
+
+      statusCard.className = "bg-brand-card border-2 border-emerald-500/50 rounded-2xl p-5 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300";
+      badge.className = "w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-2xl font-bold flex-shrink-0";
+      icon.className = "ph-bold ph-shield-check";
+      phase.innerText = "STATE 01 // PASSIVE MONITORING";
+      headline.innerText = "Patient Vitals Normal — Autonomic Tone Stable";
+      subtext.innerText = "No aberrant rhythmic clonic oscillations detected. Edge AI model idling at 1.4 mW.";
+      pill.classList.add('hidden');
+      earGlow.classList.add('opacity-0');
+
+      document.getElementById('sms-sender').innerText = "SEIZE ALERT STANDBY";
+      document.getElementById('sms-body').innerText = "STANDBY: Patient telemetry normal. Live GPS standby at latitude 13.0334, longitude 80.1812 (Chennai, TN).";
+      document.getElementById('sms-location-preview').innerHTML = '<i class="ph-fill ph-map-pin text-rose-500"></i> Live Satellite Geofence: Active';
+      document.getElementById('dispatch-cloud-status').innerText = "Connected (eSIM)";
+      document.getElementById('dispatch-cloud-status').className = "text-emerald-400 font-semibold";
+      document.getElementById('dispatch-paramedic-status').innerText = "Standby";
+      document.getElementById('dispatch-paramedic-status').className = "text-slate-400";
+
+      // Reset Telemetry variables
+      telemetry.bpm = 72;
+      telemetry.eda = 3.2;
+      telemetry.accel = 1.02;
+      telemetry.stimCurrent = 0.0;
+
+      // Enable trigger button
+      const triggerBtn = document.getElementById('btn-trigger');
+      triggerBtn.disabled = false;
+      triggerBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // --- CONTINUOUS TICK / GRAPH UPDATE LOOP ---
+    setInterval(() => {
+      tickCount++;
+
+      // Telemetry dynamics based on current active state
+      if (currentSimState === SIM_STATES.NORMAL) {
+        telemetry.bpm += (Math.random() * 2 - 1) * 0.8;
+        telemetry.bpm = Math.max(68, Math.min(76, telemetry.bpm));
+        telemetry.eda += (Math.random() * 0.1 - 0.05);
+        telemetry.eda = Math.max(3.0, Math.min(3.5, telemetry.eda));
+        telemetry.accel = 1.0 + (Math.random() * 0.08 - 0.04);
+        telemetry.stimCurrent = 0.0;
+      } 
+      else if (currentSimState === SIM_STATES.PRE_ICTAL_AURA) {
+        telemetry.bpm += 1.2;
+        telemetry.bpm = Math.min(98, telemetry.bpm);
+        telemetry.eda += 0.35;
+        telemetry.eda = Math.min(6.8, telemetry.eda);
+        telemetry.accel = 1.1 + (Math.random() * 0.2 - 0.1);
+        telemetry.stimCurrent = 0.0;
+      }
+      else if (currentSimState === SIM_STATES.ICTAL_CONVULSION) {
+        telemetry.bpm += 2.5;
+        telemetry.bpm = Math.min(142, telemetry.bpm);
+        telemetry.eda += 0.2;
+        telemetry.eda = Math.min(9.5, telemetry.eda);
+        // Simulate high-frequency shaking oscillations (3-6 Hz clonus)
+        telemetry.accel = 2.8 + Math.sin(tickCount * 1.2) * 1.6 + (Math.random() * 0.8);
+        telemetry.stimCurrent = 0.0;
+      }
+      else if (currentSimState === SIM_STATES.TVNS_CALMING) {
+        // Stimulation fires
+        telemetry.stimCurrent = 1.8 + (Math.sin(tickCount * 2) * 0.2); // mA
+        // Seizure motion begins to subside due to neuromodulation
+        telemetry.accel = Math.max(1.2, telemetry.accel - 0.3);
+        telemetry.bpm = Math.max(105, telemetry.bpm - 1.5);
+        telemetry.eda = Math.max(5.5, telemetry.eda - 0.15);
+      }
+      else if (currentSimState === SIM_STATES.DISPATCH_RESOLVED) {
+        telemetry.stimCurrent = 0.0;
+        telemetry.accel = 1.05 + (Math.random() * 0.05);
+        telemetry.bpm = Math.max(78, telemetry.bpm - 0.8);
+        telemetry.eda = Math.max(3.4, telemetry.eda - 0.08);
+      }
+
+      // Update Top Metrics UI
+      document.getElementById('val-bpm').innerText = Math.round(telemetry.bpm);
+      document.getElementById('val-eda').innerText = telemetry.eda.toFixed(1);
+      document.getElementById('val-accel').innerText = telemetry.accel.toFixed(2);
+      document.getElementById('val-stim').innerText = telemetry.stimCurrent > 0 ? telemetry.stimCurrent.toFixed(1) : "0.0";
+
+      // Status labels beneath metrics
+      if (currentSimState === SIM_STATES.ICTAL_CONVULSION) {
+        document.getElementById('val-bpm-status').innerText = "Ictal Tachycardia Surge";
+        document.getElementById('val-bpm-status').className = "text-[11px] font-mono mt-2 text-rose-400 font-bold";
+        document.getElementById('val-accel-status').innerText = "Tonic-Clonic Rhythmic Jerk";
+        document.getElementById('val-accel-status').className = "text-[11px] font-mono mt-2 text-rose-400 font-bold";
+      } else if (currentSimState === SIM_STATES.TVNS_CALMING) {
+        document.getElementById('val-stim-status').innerText = "20 Hz Biphasic Output Active";
+        document.getElementById('val-stim-status').className = "text-[11px] font-mono mt-2 text-vagus-400 font-bold";
+      } else {
+        document.getElementById('val-bpm-status').innerText = "Resting Autonomic Tone";
+        document.getElementById('val-bpm-status').className = "text-[11px] font-mono mt-2 text-slate-400";
+        document.getElementById('val-accel-status').innerText = "Zero Clonus Signature";
+        document.getElementById('val-accel-status').className = "text-[11px] font-mono mt-2 text-slate-400";
+        document.getElementById('val-stim-status').innerText = "Suppression Inactive";
+        document.getElementById('val-stim-status').className = "text-[11px] font-mono mt-2 text-slate-400";
+      }
+
+      // Update Chart Data Stream
+      telemetryChart.data.datasets[0].data.shift();
+      telemetryChart.data.datasets[0].data.push(telemetry.bpm);
+
+      telemetryChart.data.datasets[1].data.shift();
+      telemetryChart.data.datasets[1].data.push(telemetry.accel);
+
+      telemetryChart.data.datasets[2].data.shift();
+      telemetryChart.data.datasets[2].data.push(telemetry.eda);
+
+      telemetryChart.update();
+    }, 250);
+  </script>
+</body>
+</html>

@@ -1,0 +1,3945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEIZE ALERT — Active Epilepsy Technology | Closed-Loop Cervical-Auricular Band</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================================
+       1. COLOR SYSTEM & CSS TOKENS
+       Theme: Modern dark clinical aesthetic (#0B0F19 background,
+              neon electric cyan #00D4FF, alert amber #FF9F0A,
+              calming purple #9D4EDD, medical emerald #10B981, critical red #FF3B30)
+       ========================================================================= */
+    :root {
+      --bg-base: #0B0F19;
+      --bg-panel: rgba(14, 21, 38, 0.85);
+      --bg-panel-elevated: rgba(19, 29, 52, 0.92);
+      --bg-card: rgba(16, 25, 45, 0.65);
+      --bg-glass-hover: rgba(26, 40, 72, 0.85);
+
+      --neon-cyan: #00D4FF;
+      --neon-cyan-glow: rgba(0, 212, 255, 0.35);
+      --neon-cyan-dim: rgba(0, 212, 255, 0.12);
+
+      --alert-amber: #FF9F0A;
+      --alert-amber-glow: rgba(255, 159, 10, 0.4);
+      --alert-amber-dim: rgba(255, 159, 10, 0.15);
+
+      --calming-purple: #9D4EDD;
+      --calming-purple-glow: rgba(157, 78, 221, 0.45);
+      --calming-purple-dim: rgba(157, 78, 221, 0.18);
+
+      --medical-emerald: #10B981;
+      --medical-emerald-glow: rgba(16, 185, 129, 0.35);
+
+      --critical-red: #FF3B30;
+      --critical-red-glow: rgba(255, 59, 48, 0.45);
+
+      --gold-contact: #F5D061;
+      --gold-glow: rgba(245, 208, 97, 0.4);
+
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-cyan: rgba(0, 212, 255, 0.28);
+      --border-purple: rgba(157, 78, 221, 0.35);
+      --border-amber: rgba(255, 159, 10, 0.35);
+
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --text-dark: #0B0F19;
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 212, 255, 0.08) 0%, transparent 55%),
+        radial-gradient(circle at 85% 30%, rgba(157, 78, 221, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 15% 75%, rgba(255, 159, 10, 0.05) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      transition: box-shadow 0.4s ease;
+    }
+
+    /* Screen Border Alert Pulse during Seizure Phase */
+    body.seizure-alarm-active {
+      box-shadow: inset 0 0 60px rgba(255, 59, 48, 0.5), inset 0 0 120px rgba(255, 159, 10, 0.25);
+      animation: alertScreenPulse 1.1s infinite ease-in-out;
+    }
+
+    @keyframes alertScreenPulse {
+      0%, 100% { box-shadow: inset 0 0 45px rgba(255, 59, 48, 0.45); }
+      50% { box-shadow: inset 0 0 85px rgba(255, 59, 48, 0.75), inset 0 0 150px rgba(255, 159, 10, 0.35); }
+    }
+
+    body.tvns-calming-active {
+      box-shadow: inset 0 0 70px rgba(157, 78, 221, 0.45), inset 0 0 130px rgba(0, 212, 255, 0.2);
+      animation: tvnsScreenPulse 1.8s infinite ease-in-out;
+    }
+
+    @keyframes tvnsScreenPulse {
+      0%, 100% { box-shadow: inset 0 0 50px rgba(157, 78, 221, 0.35); }
+      50% { box-shadow: inset 0 0 85px rgba(157, 78, 221, 0.6), inset 0 0 140px rgba(0, 212, 255, 0.25); }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--neon-cyan);
+    }
+
+    /* =========================================================================
+       2. TOP MEDICAL CLINICAL HEADER
+       ========================================================================= */
+    header.clinical-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: rgba(11, 15, 25, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 16px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(157, 78, 221, 0.25));
+      border: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 16px var(--neon-cyan-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .brand-logo-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--neon-cyan);
+      fill: none;
+      filter: drop-shadow(0 0 6px var(--neon-cyan));
+    }
+
+    .brand-titles {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-name {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-name span.cyan {
+      color: var(--neon-cyan);
+      text-shadow: 0 0 12px var(--neon-cyan-glow);
+    }
+    .brand-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(157, 78, 221, 0.2);
+      border: 1px solid var(--border-purple);
+      color: #D8B4FE;
+      text-transform: uppercase;
+    }
+    .brand-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+
+    /* Main Navigation Pills */
+    nav.app-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 25, 45, 0.7);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+    }
+    .nav-btn {
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .nav-btn:hover {
+      color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-btn.active {
+      color: #FFFFFF;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(157, 78, 221, 0.25));
+      border: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
+    }
+
+    /* Header Actions: Web Serial + Audio + Quick Reset */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-action {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+    .btn-action:hover {
+      background: var(--bg-glass-hover);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-serial {
+      border-color: var(--border-cyan);
+      background: rgba(0, 212, 255, 0.1);
+      color: var(--neon-cyan);
+    }
+    .btn-serial:hover {
+      background: rgba(0, 212, 255, 0.2);
+      box-shadow: 0 0 14px var(--neon-cyan-glow);
+    }
+    .btn-serial.connected {
+      border-color: var(--medical-emerald);
+      background: rgba(16, 185, 129, 0.15);
+      color: #34D399;
+      box-shadow: 0 0 12px var(--medical-emerald-glow);
+    }
+
+    .btn-audio.active {
+      border-color: var(--calming-purple);
+      color: #D8B4FE;
+      background: rgba(157, 78, 221, 0.2);
+      box-shadow: 0 0 12px var(--calming-purple-glow);
+    }
+
+    /* =========================================================================
+       3. TOP TELEMETRY STATUS TICKER
+       ========================================================================= */
+    .telemetry-ticker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 24px;
+      background: rgba(8, 12, 20, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      overflow-x: auto;
+      gap: 16px;
+    }
+    .ticker-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+    .ticker-item span.label {
+      color: var(--text-dim);
+    }
+    .ticker-item span.val {
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+    .ticker-item span.val.cyan { color: var(--neon-cyan); }
+    .ticker-item span.val.emerald { color: var(--medical-emerald); }
+    .ticker-item span.val.purple { color: #C084FC; }
+    .ticker-item span.val.amber { color: var(--alert-amber); }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--medical-emerald);
+      box-shadow: 0 0 8px var(--medical-emerald);
+      animation: liveBlink 1.4s infinite;
+    }
+    @keyframes liveBlink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+
+    /* =========================================================================
+       4. MAIN CONTAINER & SECTION TABS
+       ========================================================================= */
+    main.main-content {
+      flex: 1;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 24px 60px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .tab-section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .tab-section.active {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Universal Glass Panel */
+    .glass-card {
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      position: relative;
+    }
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+      pointer-events: none;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(14, 21, 38, 0.5);
+    }
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-title-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-title-icon.cyan { background: var(--neon-cyan-dim); border: 1px solid var(--border-cyan); color: var(--neon-cyan); }
+    .card-title-icon.purple { background: var(--calming-purple-dim); border: 1px solid var(--border-purple); color: #C084FC; }
+    .card-title-icon.amber { background: var(--alert-amber-dim); border: 1px solid var(--border-amber); color: var(--alert-amber); }
+    .card-title-icon.emerald { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--medical-emerald); }
+
+    .card-title-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: 0.3px;
+    }
+    .card-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* =========================================================================
+       5. CLOSED-LOOP SIMULATOR LAYOUT (TAB 1)
+       ========================================================================= */
+    .simulator-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+    }
+    @media (max-width: 1200px) {
+      .simulator-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Top Stage Stepper Bar */
+    .stage-stepper-card {
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .stepper-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .stepper-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .stepper-title span.active-tag {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    .stepper-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Big Action Buttons */
+    .btn-step-next {
+      background: linear-gradient(135deg, #00D4FF, #0088CC);
+      color: #06111D;
+      border: none;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 800;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 18px rgba(0, 212, 255, 0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-step-next:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(0, 212, 255, 0.55);
+    }
+
+    .btn-auto-pitch {
+      background: linear-gradient(135deg, rgba(157, 78, 221, 0.25), rgba(0, 212, 255, 0.15));
+      border: 1px solid var(--calming-purple);
+      color: #E9D5FF;
+      padding: 9px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+    .btn-auto-pitch:hover {
+      background: rgba(157, 78, 221, 0.4);
+      box-shadow: 0 0 16px var(--calming-purple-glow);
+    }
+
+    /* Recessed Tactile "Cancel False Alarm" Button */
+    .recessed-override-wrapper {
+      position: relative;
+      padding: 3px;
+      background: #060910;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.06);
+    }
+    .btn-recessed-override {
+      background: linear-gradient(180deg, #1C2436 0%, #101626 100%);
+      border: 1px solid rgba(255, 159, 10, 0.35);
+      border-radius: 9px;
+      color: #FFC078;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 8px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .btn-recessed-override:hover {
+      border-color: var(--alert-amber);
+      color: #FFF;
+      box-shadow: 0 0 14px var(--alert-amber-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .btn-recessed-override:active {
+      transform: translateY(2px);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+    }
+    .btn-recessed-override.active-alarm {
+      border-color: var(--critical-red);
+      background: linear-gradient(180deg, #3D1214 0%, #20090A 100%);
+      color: #FF8787;
+      animation: overrideVibrate 0.8s infinite;
+      box-shadow: 0 0 18px var(--critical-red-glow);
+    }
+    @keyframes overrideVibrate {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+
+    /* 5 Stages Pipeline Track */
+    .stages-track {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 900px) {
+      .stages-track {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stage-item {
+      background: rgba(14, 21, 38, 0.5);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .stage-item::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      transition: background 0.25s ease;
+    }
+    .stage-item:hover {
+      background: rgba(19, 29, 52, 0.7);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .stage-item.active {
+      background: rgba(0, 212, 255, 0.08);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.18);
+    }
+    .stage-item.active::before {
+      background: var(--neon-cyan);
+      box-shadow: 0 0 10px var(--neon-cyan);
+    }
+    .stage-item.stage-warning.active {
+      background: rgba(255, 159, 10, 0.1);
+      border-color: var(--alert-amber);
+      box-shadow: 0 0 20px var(--alert-amber-glow);
+    }
+    .stage-item.stage-warning.active::before {
+      background: var(--alert-amber);
+      box-shadow: 0 0 10px var(--alert-amber);
+    }
+    .stage-item.stage-critical.active {
+      background: rgba(255, 59, 48, 0.12);
+      border-color: var(--critical-red);
+      box-shadow: 0 0 22px var(--critical-red-glow);
+    }
+    .stage-item.stage-critical.active::before {
+      background: var(--critical-red);
+      box-shadow: 0 0 12px var(--critical-red);
+    }
+    .stage-item.stage-tvns.active {
+      background: rgba(157, 78, 221, 0.14);
+      border-color: var(--calming-purple);
+      box-shadow: 0 0 24px var(--calming-purple-glow);
+    }
+    .stage-item.stage-tvns.active::before {
+      background: var(--calming-purple);
+      box-shadow: 0 0 12px var(--calming-purple);
+    }
+    .stage-item.stage-sos.active {
+      background: rgba(0, 212, 255, 0.12);
+      border-color: #38BDF8;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+    }
+    .stage-item.stage-sos.active::before {
+      background: #38BDF8;
+    }
+
+    .stage-num-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .stage-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+      line-height: 1.3;
+    }
+    .stage-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* Countdown bar inside Stage 2 */
+    .countdown-timer-bar {
+      height: 4px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      margin-top: 4px;
+      overflow: hidden;
+      display: none;
+    }
+    .countdown-timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #FF9F0A, #FF3B30);
+      transition: width 0.1s linear;
+    }
+
+    /* Waveform Oscilloscope Stack */
+    .waveforms-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .waveform-card {
+      background: #080D17;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+    .waveform-top-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .wave-tag {
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .wave-tag.motion { background: rgba(0, 212, 255, 0.15); color: var(--neon-cyan); border: 1px solid var(--border-cyan); }
+    .wave-tag.carotid { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .wave-tag.eda { background: rgba(245, 208, 97, 0.15); color: var(--gold-contact); border: 1px solid rgba(245, 208, 97, 0.3); }
+    .wave-tag.tvns { background: rgba(157, 78, 221, 0.18); color: #D8B4FE; border: 1px solid var(--border-purple); }
+
+    .wave-stat-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 90px;
+      background: radial-gradient(circle at 50% 50%, rgba(14, 23, 42, 0.5), #060911);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .canvas-grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+    }
+    canvas.signal-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Right Sidebar in Simulator: GPS Radar + Emergency SMS + Clinical Vitals */
+    .simulator-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Live GPS Radar Card */
+    .radar-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .radar-viewport {
+      width: 100%;
+      height: 180px;
+      position: relative;
+      border-radius: 10px;
+      background: #060A12;
+      overflow: hidden;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+    }
+    canvas#canvasRadarSweep {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .radar-overlay-badge {
+      position: absolute;
+      top: 8px; left: 8px;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      padding: 3px 8px;
+      background: rgba(11, 15, 25, 0.85);
+      border-radius: 4px;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      color: var(--neon-cyan);
+    }
+    .radar-pin-pulse {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--neon-cyan);
+      box-shadow: 0 0 14px var(--neon-cyan);
+    }
+    .radar-pin-pulse::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border: 2px solid var(--neon-cyan);
+      border-radius: 50%;
+      animation: radarRipples 1.8s infinite cubic-bezier(0, 0.2, 0.8, 1);
+    }
+    @keyframes radarRipples {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+
+    .gps-coords-box {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 8px 12px;
+      border-radius: 7px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .gps-coords-box .row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Emergency SMS Dispatch Card */
+    .sms-dispatch-card {
+      background: rgba(16, 25, 45, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+    .sms-dispatch-card.dispatched {
+      border-color: var(--critical-red);
+      box-shadow: 0 0 20px rgba(255, 59, 48, 0.3);
+    }
+
+    .phone-bubble {
+      background: rgba(22, 33, 58, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      gap: 10px;
+    }
+    .phone-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 59, 48, 0.15);
+      border: 1px solid rgba(255, 59, 48, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FF6B6B;
+      flex-shrink: 0;
+    }
+    .sms-text {
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: #E2E8F0;
+    }
+    .sms-text strong {
+      color: #FFFFFF;
+    }
+
+    .sms-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-sms-action {
+      flex: 1;
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 7px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-sms-action.call {
+      background: rgba(255, 59, 48, 0.15);
+      border-color: rgba(255, 59, 48, 0.4);
+      color: #FFA8A8;
+    }
+    .btn-sms-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #FFFFFF;
+    }
+
+    /* =========================================================================
+       6. INTERACTIVE HARDWARE HOTSPOT VIEWER (TAB 2)
+       ========================================================================= */
+    .hardware-viewer-layout {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 24px;
+    }
+    @media (max-width: 1100px) {
+      .hardware-viewer-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .schematic-canvas-card {
+      background: #080D18;
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+    }
+
+    .schematic-view-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .schematic-mode-pill {
+      display: flex;
+      background: rgba(16, 25, 45, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .mode-tab-btn {
+      padding: 6px 14px;
+      font-size: 11.5px;
+      font-weight: 600;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .mode-tab-btn.active {
+      background: var(--neon-cyan);
+      color: #06111D;
+      font-weight: 700;
+      box-shadow: 0 0 12px var(--neon-cyan-glow);
+    }
+
+    .schematic-svg-container {
+      width: 100%;
+      min-height: 480px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 50%, rgba(18, 28, 52, 0.4), #060A13 80%);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+    }
+
+    svg.cervical-band-svg {
+      width: 100%;
+      max-width: 680px;
+      height: auto;
+      filter: drop-shadow(0 15px 35px rgba(0,0,0,0.6));
+    }
+
+    /* Hotspot markers on SVG */
+    .hotspot-pin {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .hotspot-pin:hover {
+      transform: scale(1.15);
+    }
+    .hotspot-ring-pulse {
+      animation: hotspotPulse 2s infinite ease-out;
+      transform-origin: center;
+    }
+    @keyframes hotspotPulse {
+      0% { r: 10; opacity: 0.9; }
+      100% { r: 24; opacity: 0; }
+    }
+
+    /* Hotspot Details Inspector Panel (Right) */
+    .hotspot-details-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .hotspot-pill-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .hotspot-pill-item {
+      background: rgba(16, 25, 45, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .hotspot-pill-item:hover {
+      background: rgba(22, 35, 62, 0.9);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    .hotspot-pill-item.active {
+      border-color: var(--neon-cyan);
+      background: rgba(0, 212, 255, 0.1);
+      box-shadow: 0 0 16px rgba(0, 212, 255, 0.18);
+    }
+    .hotspot-pill-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(0, 212, 255, 0.2);
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .hotspot-pill-item.active .hotspot-pill-badge {
+      background: var(--neon-cyan);
+      color: #06111D;
+    }
+    .hotspot-pill-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .hotspot-pill-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+    .hotspot-pill-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Active Hotspot Deep-Dive Card */
+    .active-hotspot-spec-card {
+      background: rgba(14, 21, 38, 0.85);
+      border: 1px solid var(--border-cyan);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .spec-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .spec-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(0, 212, 255, 0.15);
+      color: var(--neon-cyan);
+      border: 1px solid var(--border-cyan);
+    }
+    .spec-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+    .spec-desc {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #CBD5E1;
+    }
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+    }
+    .spec-table td {
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .spec-table td.label {
+      color: var(--text-dim);
+    }
+    .spec-table td.val {
+      text-align: right;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    /* =========================================================================
+       7. BIOCOMPATIBLE & ANTI-ALLERGIC FOCUS SECTION (TAB 3)
+       ========================================================================= */
+    .biocompatibility-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 960px) {
+      .biocompatibility-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bio-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .bio-card:hover {
+      border-color: var(--border-cyan);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0, 212, 255, 0.12);
+    }
+    .bio-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .bio-icon-box.cyan { background: var(--neon-cyan-dim); border: 1px solid var(--border-cyan); color: var(--neon-cyan); }
+    .bio-icon-box.gold { background: rgba(245, 208, 97, 0.15); border: 1px solid rgba(245, 208, 97, 0.35); color: var(--gold-contact); }
+    .bio-icon-box.emerald { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: var(--medical-emerald); }
+
+    .bio-card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+    .bio-standard-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      align-self: flex-start;
+    }
+    .bio-card-desc {
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #CBD5E1;
+    }
+    .bio-features-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .bio-features-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .bio-features-list li svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--medical-emerald);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Comparison Table: SEIZE ALERT vs Consumer Smartwatches vs Gel EEG */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+    }
+    table.comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      text-align: left;
+    }
+    table.comparison-table th {
+      padding: 14px 18px;
+      background: rgba(19, 29, 52, 0.8);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    table.comparison-table td {
+      padding: 13px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+    table.comparison-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    table.comparison-table td.highlight {
+      color: #FFFFFF;
+      font-weight: 700;
+      background: rgba(0, 212, 255, 0.04);
+      border-left: 1px solid var(--border-cyan);
+      border-right: 1px solid var(--border-cyan);
+    }
+    table.comparison-table th.highlight {
+      background: rgba(0, 212, 255, 0.12);
+      color: var(--neon-cyan);
+      border-left: 1px solid var(--border-cyan);
+      border-right: 1px solid var(--border-cyan);
+    }
+
+    /* =========================================================================
+       8. UNIT ECONOMICS & PRICING TABLE (TAB 4)
+       STRICT RULE: Currency ONLY in Indian Rupees (₹ / INR). No dollars.
+       ========================================================================= */
+    .pricing-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 1100px) {
+      .pricing-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 600px) {
+      .pricing-summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+    .pricing-card:hover {
+      transform: translateY(-2px);
+    }
+    .pricing-card.primary {
+      border-color: var(--neon-cyan);
+      background: linear-gradient(180deg, rgba(0, 212, 255, 0.09) 0%, rgba(14, 21, 38, 0.85) 100%);
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
+    }
+    .pricing-card.legacy {
+      border-color: rgba(255, 59, 48, 0.35);
+      background: rgba(255, 59, 48, 0.04);
+    }
+
+    .pricing-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      align-self: flex-start;
+      letter-spacing: 0.5px;
+    }
+    .pricing-badge.cyan { background: rgba(0, 212, 255, 0.15); color: var(--neon-cyan); border: 1px solid var(--border-cyan); }
+    .pricing-badge.purple { background: rgba(157, 78, 221, 0.2); color: #D8B4FE; border: 1px solid var(--border-purple); }
+    .pricing-badge.emerald { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .pricing-badge.red { background: rgba(255, 59, 48, 0.15); color: #FF8787; border: 1px solid rgba(255, 59, 48, 0.3); }
+
+    .pricing-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .pricing-amount {
+      font-size: 28px;
+      font-weight: 900;
+      color: #FFFFFF;
+      font-family: var(--font-mono);
+      letter-spacing: -0.5px;
+    }
+    .pricing-amount span.sub {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .pricing-desc {
+      font-size: 12px;
+      line-height: 1.45;
+      color: #CBD5E1;
+    }
+
+    /* BOM Breakdown Table */
+    .bom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .bom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* =========================================================================
+       9. WEB SERIAL & EDGE TELEMETRY CONSOLE (TAB 5)
+       ========================================================================= */
+    .serial-layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 1000px) {
+      .serial-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .serial-config-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .serial-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .serial-form-group label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .serial-select, .serial-input {
+      background: #060910;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #FFFFFF;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+    }
+    .serial-select:focus, .serial-input:focus {
+      border-color: var(--neon-cyan);
+    }
+
+    .serial-terminal-card {
+      background: #060912;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 440px;
+    }
+    .serial-terminal-header {
+      padding: 10px 16px;
+      background: rgba(14, 21, 38, 0.7);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+    }
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .t-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+    .t-dot.r { background: #FF5F56; }
+    .t-dot.y { background: #FFBD2E; }
+    .t-dot.g { background: #27C93F; }
+
+    .serial-terminal-body {
+      flex: 1;
+      padding: 14px 16px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: #A5B4FC;
+      overflow-y: auto;
+      max-height: 480px;
+      background: #050810;
+    }
+    .log-row {
+      display: flex;
+      gap: 10px;
+      word-break: break-all;
+    }
+    .log-time { color: var(--text-dim); }
+    .log-tag { font-weight: 700; }
+    .log-tag.rx { color: var(--neon-cyan); }
+    .log-tag.tx { color: #C084FC; }
+    .log-tag.err { color: var(--critical-red); }
+    .log-tag.ok { color: var(--medical-emerald); }
+    .log-msg { color: #E2E8F0; }
+
+    /* =========================================================================
+       10. CLINICAL PITCH DECK & EXECUTIVE SUMMARY (TAB 6)
+       ========================================================================= */
+    .pitch-deck-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 1000px) {
+      .pitch-deck-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pitch-deck-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .pitch-step-pill {
+      font-size: 10.5px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 4px;
+      align-self: flex-start;
+      background: rgba(0, 212, 255, 0.15);
+      color: var(--neon-cyan);
+      border: 1px solid var(--border-cyan);
+    }
+    .pitch-deck-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+    .pitch-deck-body {
+      font-size: 13px;
+      line-height: 1.55;
+      color: #CBD5E1;
+    }
+
+    /* Footer */
+    footer.app-footer {
+      margin-top: auto;
+      padding: 16px 24px;
+      background: rgba(8, 12, 20, 0.95);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    footer.app-footer a {
+      color: var(--neon-cyan);
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================================================================
+       1. TOP CLINICAL HEADER BAR
+       ========================================================================= -->
+  <header class="clinical-header">
+    <div class="brand-group">
+      <div class="brand-logo-icon">
+        <!-- Medical Wave Icon -->
+        <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="brand-titles">
+        <div class="brand-name">
+          SEIZE<span class="cyan">ALERT</span>
+          <span class="brand-badge">ACTIVE TECH</span>
+        </div>
+        <div class="brand-sub">Closed-Loop Cervical-Auricular Epilepsy Intervention Band</div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <nav class="app-nav" id="mainNav">
+      <button class="nav-btn active" data-tab="tabSimulator">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        <span>5-Stage Pitch Simulator</span>
+      </button>
+      <button class="nav-btn" data-tab="tabHardware">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="m4.93 4.93 4.24 4.24"/>
+          <path d="m14.83 9.17 4.24-4.24"/>
+          <path d="m14.83 14.83 4.24 4.24"/>
+          <path d="m9.17 14.83-4.24 4.24"/>
+          <circle cx="12" cy="12" r="4"/>
+        </svg>
+        <span>Hardware Hotspot Viewer</span>
+      </button>
+      <button class="nav-btn" data-tab="tabBiocompatibility">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+        <span>Biocompatible Focus</span>
+      </button>
+      <button class="nav-btn" data-tab="tabEconomics">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 3h12"/>
+          <path d="M6 8h12"/>
+          <path d="m6 13 8.5 8"/>
+          <path d="M6 13h3a4 4 0 0 0 0-8"/>
+        </svg>
+        <span>Unit Economics (₹ INR)</span>
+      </button>
+      <button class="nav-btn" data-tab="tabSerial">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="18" height="12" x="3" y="6" rx="2"/>
+          <path d="M7 12h.01"/>
+          <path d="M12 12h.01"/>
+          <path d="M17 12h.01"/>
+        </svg>
+        <span>Web Serial Telemetry</span>
+      </button>
+      <button class="nav-btn" data-tab="tabPitch">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+        <span>Executive Pitch</span>
+      </button>
+    </nav>
+
+    <!-- Top Action Buttons -->
+    <div class="header-actions">
+      <!-- Web Serial Quick Connect -->
+      <button id="btnTopSerial" class="btn-action btn-serial" title="Connect physical ESP32 or trigger virtual telemetry stream">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+        <span id="topSerialText">Connect Live Band</span>
+      </button>
+
+      <!-- Web Audio API Tone Synthesizer Toggle -->
+      <button id="btnAudioToggle" class="btn-action btn-audio active" title="Toggle tVNS micro-pulse audio tone synthesizer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+        <span id="audioToggleText">tVNS Audio: ON</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       2. REAL-TIME TELEMETRY STATUS TICKER
+       ========================================================================= */
+  -->
+  <div class="telemetry-ticker">
+    <div class="ticker-item">
+      <div class="pulse-dot"></div>
+      <span class="label">HARDWARE FORM:</span>
+      <span class="val cyan">Cervical-Auricular (Non-Watch) Band</span>
+    </div>
+    <div class="ticker-item">
+      <span class="label">EDGEML MCU:</span>
+      <span class="val emerald">Nordic nRF5340 / ESP32-S3 (250Hz INT8)</span>
+    </div>
+    <div class="ticker-item">
+      <span class="label">CELLULAR UPLINK:</span>
+      <span class="val cyan">Quectel BG95 LTE-M (Standalone / No Phone Required)</span>
+    </div>
+    <div class="ticker-item">
+      <span class="label">tVNS STIMULATOR:</span>
+      <span class="val purple" id="tickerTvnsState">ARMED (25Hz Biphasic @ 1.2mA)</span>
+    </div>
+    <div class="ticker-item">
+      <span class="label">GNSS CONSTELLATION:</span>
+      <span class="val">11 SATS LOCKED (±1.4m Accuracy)</span>
+    </div>
+    <div class="ticker-item">
+      <span class="label">ISO ACCREDITATION:</span>
+      <span class="val emerald">ISO 10993-5/10 Biocompatible</span>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       3. MAIN VIEWPORTS & TABS
+       ========================================================================= -->
+  <main class="main-content">
+
+    <!-- =======================================================================
+         TAB 1: 5-STAGE CLOSED-LOOP PITCH SIMULATOR
+         ======================================================================= -->
+    <section id="tabSimulator" class="tab-section active">
+
+      <!-- Stepper Controls & False Alarm Override -->
+      <div class="glass-card stage-stepper-card">
+        <div class="stepper-header-row">
+          <div class="stepper-title">
+            <span>5-Stage Closed-Loop Pitch Simulator</span>
+            <span id="activeStageTag" class="active-tag" style="background: rgba(0, 212, 255, 0.15); color: var(--neon-cyan); border: 1px solid var(--border-cyan);">
+              STAGE 1: NORMAL BASELINE
+            </span>
+          </div>
+
+          <div class="stepper-controls">
+            <!-- Step Next Stage Button -->
+            <button id="btnStepNext" class="btn-step-next">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              <span>Advance Next Stage</span>
+            </button>
+
+            <!-- Auto-Play Pitch Demo Button -->
+            <button id="btnAutoDemo" class="btn-auto-pitch">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="10 8 16 12 10 16 10 8"/>
+              </svg>
+              <span id="autoDemoText">Run Full 5-Stage Demo</span>
+            </button>
+
+            <!-- Recessed False Alarm Cancel Button -->
+            <div class="recessed-override-wrapper">
+              <button id="btnCancelOverride" class="btn-recessed-override" title="Recessed tactile override button to halt escalation and disarm stimulation">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                <span>CANCEL FALSE ALARM</span>
+              </button>
+            </div>
+
+            <!-- Reset to Baseline -->
+            <button id="btnResetAll" class="btn-action" style="font-size: 11px; padding: 7px 11px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+              <span>RESET</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5 Interactive Stage Selector Cards -->
+        <div class="stages-track" id="stagesTrack">
+
+          <!-- Stage 1 -->
+          <div class="stage-item active" data-stage="1">
+            <div class="stage-num-badge">
+              <span>STAGE 01</span>
+              <span>NORMAL</span>
+            </div>
+            <div class="stage-name">Normal Baseline</div>
+            <div class="stage-desc">Resting hemodynamics (72 BPM, high HRV). Motion 0.02g. Continuous 250Hz edge TinyML inference.</div>
+          </div>
+
+          <!-- Stage 2 -->
+          <div class="stage-item stage-warning" data-stage="2">
+            <div class="stage-num-badge">
+              <span>STAGE 02</span>
+              <span id="countdownText" style="color: var(--alert-amber);">T-45s DETECT</span>
+            </div>
+            <div class="stage-name">Pre-Ictal Aura</div>
+            <div class="stage-desc">Sympathetic surge: EDA spikes to 7.8µS, HRV drops. 180Hz neck haptic pulse + 10s override window.</div>
+            <div id="countdownBar" class="countdown-timer-bar">
+              <div id="countdownFill" class="countdown-timer-fill"></div>
+            </div>
+          </div>
+
+          <!-- Stage 3 -->
+          <div class="stage-item stage-critical" data-stage="3">
+            <div class="stage-num-badge">
+              <span>STAGE 03</span>
+              <span style="color: var(--critical-red);">ICTAL CONVULSION</span>
+            </div>
+            <div class="stage-name">Tonic-Clonic Seizure</div>
+            <div class="stage-desc">High-G rhythmic motion (3.5g – 4.8g @ 4-6 Hz), ictal tachycardia (162 BPM). 99.6% model confidence.</div>
+          </div>
+
+          <!-- Stage 4 -->
+          <div class="stage-item stage-tvns" data-stage="4">
+            <div class="stage-num-badge">
+              <span>STAGE 04</span>
+              <span style="color: #C084FC;">ACTIVE NEUROMOD</span>
+            </div>
+            <div class="stage-name">Active tVNS Calming</div>
+            <div class="stage-desc">25Hz biphasic pulses to auricular vagus nerve (ABVN). Desynchronizes cortical seizure burst & suppresses convulsion.</div>
+          </div>
+
+          <!-- Stage 5 -->
+          <div class="stage-item stage-sos" data-stage="5">
+            <div class="stage-num-badge">
+              <span>STAGE 05</span>
+              <span style="color: #38BDF8;">LTE-M DISPATCH</span>
+            </div>
+            <div class="stage-name">Autonomous GPS SOS</div>
+            <div class="stage-desc">Direct standalone cellular packet broadcast to 108 Emergency Medical Services & caregivers with live GNSS fix.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Simulator Split: Left Live Waveforms | Right Emergency Radar & SMS -->
+      <div class="simulator-grid">
+
+        <!-- Left: Real-time Multi-Lead Biosensor Waveforms (Canvas) -->
+        <div class="waveforms-container">
+
+          <!-- Lead 1: 6-Axis Motion Vector (G-Force & Clonic Tremor) -->
+          <div class="waveform-card">
+            <div class="waveform-top-meta">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="wave-tag motion">6-AXIS CERVICAL IMU</span>
+                <span style="color:#FFF; font-weight:700;">G-Force Motion Vector & Clonic Rhythm</span>
+              </div>
+              <div>
+                <span style="color:var(--text-muted); font-size:10px;">ACCEL MAGNITUDE: </span>
+                <span id="valMotionG" class="wave-stat-val" style="color:var(--neon-cyan);">0.02 g</span>
+              </div>
+            </div>
+            <div class="canvas-wrapper">
+              <div class="canvas-grid-lines"></div>
+              <canvas id="canvasMotion" class="signal-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Lead 2: Carotid Arterial Pulse (PPG) & Heart Rate -->
+          <div class="waveform-card">
+            <div class="waveform-top-meta">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="wave-tag carotid">CAROTID PPG HUB</span>
+                <span style="color:#FFF; font-weight:700;">Arterial Pulse Transit & Heart Rate</span>
+              </div>
+              <div style="display:flex; gap:14px;">
+                <div>
+                  <span style="color:var(--text-muted); font-size:10px;">HR: </span>
+                  <span id="valHeartBPM" class="wave-stat-val" style="color:#34D399;">72 BPM</span>
+                </div>
+                <div>
+                  <span style="color:var(--text-muted); font-size:10px;">HRV RMSSD: </span>
+                  <span id="valHRV" class="wave-stat-val" style="color:#A7F3D0;">64 ms</span>
+                </div>
+              </div>
+            </div>
+            <div class="canvas-wrapper">
+              <div class="canvas-grid-lines"></div>
+              <canvas id="canvasPPG" class="signal-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Lead 3: Cervical Dry Gold Electrodermal Activity (EDA/GSR) -->
+          <div class="waveform-card">
+            <div class="waveform-top-meta">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="wave-tag eda">24K DRY GOLD EDA</span>
+                <span style="color:#FFF; font-weight:700;">Sympathetic Galvanic Skin Conductance</span>
+              </div>
+              <div>
+                <span style="color:var(--text-muted); font-size:10px;">TONIC EDA: </span>
+                <span id="valEDA" class="wave-stat-val" style="color:var(--gold-contact);">2.1 µS</span>
+              </div>
+            </div>
+            <div class="canvas-wrapper">
+              <div class="canvas-grid-lines"></div>
+              <canvas id="canvasEDA" class="signal-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Lead 4: Auricular tVNS Active Neuro-Stimulation Channel -->
+          <div class="waveform-card">
+            <div class="waveform-top-meta">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="wave-tag tvns">AURICULAR tVNS</span>
+                <span style="color:#FFF; font-weight:700;">25Hz Biphasic Micro-Stimulation Waveform</span>
+              </div>
+              <div style="display:flex; gap:14px;">
+                <div>
+                  <span style="color:var(--text-muted); font-size:10px;">STIM CURRENT: </span>
+                  <span id="valTvnsCurrent" class="wave-stat-val" style="color:#C084FC;">0.0 mA</span>
+                </div>
+                <div>
+                  <span style="color:var(--text-muted); font-size:10px;">PULSE WIDTH: </span>
+                  <span id="valTvnsPulseWidth" class="wave-stat-val" style="color:#E9D5FF;">0 µs</span>
+                </div>
+              </div>
+            </div>
+            <div class="canvas-wrapper">
+              <div class="canvas-grid-lines"></div>
+              <canvas id="canvasTVNS" class="signal-canvas"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Tactical GNSS Radar + Autonomous Emergency SMS Dispatch -->
+        <div class="simulator-sidebar">
+
+          <!-- Live GNSS Radar Card -->
+          <div class="radar-card">
+            <div class="card-header" style="padding: 0 0 10px 0; background: transparent;">
+              <div class="card-title-group">
+                <div class="card-title-icon cyan" style="width:28px; height:28px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="card-title-text" style="font-size:13.5px;">Standalone GNSS Radar</div>
+                  <div class="card-subtitle">Quectel BG95 Built-in Multi-GNSS</div>
+                </div>
+              </div>
+              <span id="gpsLockPill" class="pricing-badge cyan" style="font-size:9px;">FIXED: 11 SATS</span>
+            </div>
+
+            <div class="radar-viewport">
+              <canvas id="canvasRadarSweep"></canvas>
+              <div class="radar-overlay-badge">SRM RAMAPURAM / CHENNAI</div>
+              <div class="radar-pin-pulse"></div>
+            </div>
+
+            <div class="gps-coords-box">
+              <div class="row">
+                <span style="color:var(--text-dim);">LAT / LON:</span>
+                <span style="color:#FFF; font-weight:700;" id="gpsCoordText">13.0329° N, 80.1806° E</span>
+              </div>
+              <div class="row">
+                <span style="color:var(--text-dim);">ESTIMATED ACCURACY:</span>
+                <span style="color:var(--neon-cyan);">± 1.4 meters (D-GPS)</span>
+              </div>
+              <div class="row">
+                <span style="color:var(--text-dim);">CELLULAR CARRIER:</span>
+                <span style="color:#34D399;">Airtel / Jio LTE-M Band 8</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Smartphone Emergency SOS Dispatch Notification Card -->
+          <div id="smsCard" class="sms-dispatch-card">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" stroke-width="2.5">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span style="font-size:12px; font-weight:800; color:#FFFFFF;">EMERGENCY SMS DISPATCH</span>
+              </div>
+              <span id="smsStatusBadge" class="pricing-badge red" style="font-size:9px;">STANDBY</span>
+            </div>
+
+            <div class="phone-bubble">
+              <div class="phone-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+              </div>
+              <div class="sms-text" id="smsTextBody">
+                🚨 <strong>SEIZE ALERT SOS:</strong> Patient #SA-IND-104 experienced pre-ictal tonic-clonic event. Auricular tVNS active micro-stimulation delivered. Current Status: <strong>STABILIZING</strong>. Location: SRM Block 3 (13.0329° N, 80.1806° E).
+              </div>
+            </div>
+
+            <div class="sms-actions">
+              <button class="btn-sms-action call" onclick="alert('Calling 108 Emergency Ambulance Dispatch...')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <span>Call 108 EMS</span>
+              </button>
+              <button class="btn-sms-action" onclick="alert('Caregiver Telemetry Uplink: Vitals normal, patient regaining baseline sinus rhythm.')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 12h5l3 9 4-18 3 9h5"/>
+                </svg>
+                <span>Live Vitals</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Clinical State Decision Card -->
+          <div class="glass-card" style="padding: 14px; display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); font-family:var(--font-mono);">
+              CLINICAL TRIAGE STATUS
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:12px; color:#CBD5E1;">SUDEP Risk Mitigation:</span>
+              <span class="pricing-badge emerald">ACTIVE PROTECTION</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:12px; color:#CBD5E1;">False Positive Rejection:</span>
+              <span style="font-family:var(--font-mono); font-size:12px; color:var(--neon-cyan); font-weight:700;">99.4% Dual-Validation</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:12px; color:#CBD5E1;">Therapeutic Mechanism:</span>
+              <span style="font-size:11px; color:#D8B4FE; font-weight:600;">ABVN Vagal Calming</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         TAB 2: INTERACTIVE HARDWARE HOTSPOT VIEWER
+         Non-Watch "Cervical-Auricular (Neck-and-Ear) Band"
+         ======================================================================= -->
+    <section id="tabHardware" class="tab-section">
+
+      <div class="glass-card" style="padding: 18px 22px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:800; color:#FFF;">Cervical-Auricular (Neck-and-Ear) Band Schematic</h2>
+            <p style="font-size:12px; color:var(--text-muted);">
+              Why non-watch? Wrist monitors suffer from violent false positives (tooth brushing, clapping) and are anatomically isolated from the brainstem. The cervical band monitors carotid hemodynamics directly and accesses the auricular vagus nerve branch!
+            </p>
+          </div>
+
+          <div class="schematic-mode-pill">
+            <button id="btnModeHotspots" class="mode-tab-btn active">Hotspot Markers</button>
+            <button id="btnModeXRay" class="mode-tab-btn">Exploded X-Ray</button>
+            <button id="btnModePathway" class="mode-tab-btn">tVNS Nerve Loop</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hardware-viewer-layout">
+
+        <!-- Left: Interactive Medical-Grade SVG Hardware Diagram -->
+        <div class="schematic-canvas-card">
+          <div class="schematic-svg-container">
+
+            <svg class="cervical-band-svg" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <!-- Gradients -->
+                <linearGradient id="chassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#1E293B"/>
+                  <stop offset="45%" stop-color="#0F172A"/>
+                  <stop offset="100%" stop-color="#020617"/>
+                </linearGradient>
+
+                <linearGradient id="earhookGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#0F172A"/>
+                  <stop offset="50%" stop-color="#334155"/>
+                  <stop offset="100%" stop-color="#1E293B"/>
+                </linearGradient>
+
+                <linearGradient id="goldPadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#FDE047"/>
+                  <stop offset="40%" stop-color="#EAB308"/>
+                  <stop offset="100%" stop-color="#A16207"/>
+                </linearGradient>
+
+                <linearGradient id="cyanOpticalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#38BDF8"/>
+                  <stop offset="100%" stop-color="#0284C7"/>
+                </linearGradient>
+
+                <!-- Glow Filters -->
+                <filter id="glowCyanFilter" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="glowPurpleFilter" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="5" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="glowGoldFilter" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <!-- Subtle Anatomical Silhouette (Head, Neck & Ear outline) -->
+              <g id="anatomicalBackdrop" opacity="0.25">
+                <!-- Head & Jaw contour -->
+                <path d="M 470 70 C 420 50, 310 50, 270 120 C 240 180, 245 250, 280 295 C 310 335, 345 350, 380 375 L 390 480" 
+                      fill="none" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                <!-- Neck Column -->
+                <path d="M 520 180 C 535 240, 545 330, 560 480" 
+                      fill="none" stroke="rgba(255, 255, 255, 0.3)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                <!-- Ear Silhouette on left -->
+                <path d="M 270 160 C 235 155, 205 190, 215 240 C 220 270, 245 285, 265 280 C 275 255, 270 200, 270 160 Z" 
+                      fill="rgba(0, 212, 255, 0.03)" stroke="rgba(0, 212, 255, 0.35)" stroke-width="1.5"/>
+                <!-- Concha Cymba anatomical target cavity -->
+                <ellipse cx="248" cy="225" rx="14" ry="18" fill="rgba(157, 78, 221, 0.12)" stroke="rgba(157, 78, 221, 0.5)" stroke-width="1" stroke-dasharray="3,3"/>
+                <text x="248" y="228" font-family="'JetBrains Mono'" font-size="7.5" fill="#D8B4FE" text-anchor="middle">ABVN</text>
+              </g>
+
+              <!-- 5. MEDICAL-GRADE LIQUID SILICONE FLEXIBLE NECK CHASSIS -->
+              <!-- Ergonomic Cervical Collar Band Body -->
+              <g id="component5_Chassis">
+                <!-- Shadow -->
+                <path d="M 290 350 C 310 320, 480 320, 510 350 C 540 380, 520 440, 490 450 C 450 465, 350 465, 310 450 C 280 440, 260 380, 290 350 Z" 
+                      fill="#030712" filter="blur(8px)" opacity="0.6"/>
+
+                <!-- Main Outer U-Band (LSR Platinum Cured) -->
+                <path d="M 295 345 C 320 315, 480 315, 505 345 C 535 380, 515 440, 485 450 C 445 462, 355 462, 315 450 C 285 440, 265 380, 295 345 Z" 
+                      fill="url(#chassisGrad)" stroke="rgba(255, 255, 255, 0.18)" stroke-width="2"/>
+
+                <!-- Inner Ergonomic Comfort Grooves (Sweat Micro-Channels) -->
+                <path d="M 330 360 C 360 345, 440 345, 470 360" fill="none" stroke="rgba(0, 212, 255, 0.2)" stroke-width="1.2" stroke-dasharray="4,4"/>
+                <path d="M 325 380 C 365 365, 435 365, 475 380" fill="none" stroke="rgba(0, 212, 255, 0.15)" stroke-width="1.2" stroke-dasharray="4,4"/>
+                <path d="M 330 405 C 365 390, 435 390, 470 405" fill="none" stroke="rgba(0, 212, 255, 0.12)" stroke-width="1.2" stroke-dasharray="4,4"/>
+
+                <!-- Superelastic Titanium Memory Skeleton Core (visible through transparent sheath in X-ray) -->
+                <path id="xraySkeleton" d="M 305 355 C 335 330, 465 330, 495 355 C 515 380, 505 425, 480 435 C 440 448, 360 448, 320 435 C 295 425, 285 380, 305 355 Z" 
+                      fill="none" stroke="#38BDF8" stroke-width="2" stroke-dasharray="6,4" opacity="0.4"/>
+              </g>
+
+              <!-- 4. CENTRAL EDGEML MCU & STANDALONE GPS/LTE MODULE -->
+              <!-- Posterior Neck Enclosure (Grade-5 Titanium + Zirconia Ceramic) -->
+              <g id="component4_MCU">
+                <rect x="360" y="380" width="80" height="60" rx="10" 
+                      fill="#09101F" stroke="var(--neon-cyan)" stroke-width="1.8" filter="url(#glowCyanFilter)"/>
+                
+                <!-- Internal Silicon Chip Die & Traces -->
+                <rect x="375" y="395" width="50" height="30" rx="4" fill="#040814" stroke="rgba(0, 212, 255, 0.5)" stroke-width="1"/>
+                <text x="400" y="410" font-family="'JetBrains Mono'" font-size="7.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">TINYML CORE</text>
+                <text x="400" y="420" font-family="'JetBrains Mono'" font-size="6.5" fill="var(--neon-cyan)" text-anchor="middle">nRF5340 / ESP32</text>
+
+                <!-- Status Micro-LEDs -->
+                <circle cx="370" cy="390" r="2.5" fill="#10B981" filter="url(#glowCyanFilter)"/>
+                <circle cx="380" cy="390" r="2.5" fill="#00D4FF"/>
+                <circle cx="420" cy="390" r="2.5" fill="#C084FC" id="ledTvnsHardware"/>
+                <circle cx="430" cy="390" r="2.5" fill="#FF9F0A"/>
+
+                <!-- Ceramic GNSS / LTE-M High Gain Patch Antenna -->
+                <rect x="382" y="428" width="36" height="8" rx="2" fill="#1E293B" stroke="rgba(255, 255, 255, 0.2)" stroke-width="0.8"/>
+                <text x="400" y="434" font-family="'JetBrains Mono'" font-size="5" fill="#94A3B8" text-anchor="middle">GNSS/LTE-M ANT</text>
+              </g>
+
+              <!-- 3. CAROTID PPG PULSE SENSOR HUB (Dual-Wavelength Hemodynamics) -->
+              <!-- Positioned over Anterior Carotid Artery Site -->
+              <g id="component3_Carotid">
+                <!-- Left Carotid Hub -->
+                <ellipse cx="295" cy="365" rx="16" ry="18" fill="#0A1326" stroke="var(--neon-cyan)" stroke-width="1.8" filter="url(#glowCyanFilter)"/>
+                <!-- Dual Optical Sensor Windows (Green 525nm + IR 940nm) -->
+                <circle cx="290" cy="365" r="5" fill="url(#cyanOpticalGrad)"/>
+                <circle cx="300" cy="365" r="5" fill="#10B981" opacity="0.85"/>
+                <!-- Pulsing Arterial Glow ring -->
+                <circle id="carotidPulseRing" cx="295" cy="365" r="22" fill="none" stroke="var(--neon-cyan)" stroke-width="1.5" opacity="0.7"/>
+
+                <!-- Right Carotid Hub (Symmetrical on Right Neck) -->
+                <ellipse cx="505" cy="365" rx="16" ry="18" fill="#0A1326" stroke="rgba(0, 212, 255, 0.4)" stroke-width="1.5"/>
+                <circle cx="500" cy="365" r="4.5" fill="url(#cyanOpticalGrad)" opacity="0.6"/>
+                <circle cx="510" cy="365" r="4.5" fill="#10B981" opacity="0.6"/>
+              </g>
+
+              <!-- 2. GOLD-PLATED DRY ELECTRODES (Biocompatible EDA/GSR Tracking) -->
+              <!-- Symmetrical cervical dry gold contact arrays -->
+              <g id="component2_GoldElectrodes">
+                <!-- Electrode Pad 1 -->
+                <circle cx="335" cy="425" r="10" fill="url(#goldPadGrad)" stroke="#FEF08A" stroke-width="1.4" filter="url(#glowGoldFilter)"/>
+                <circle cx="335" cy="425" r="5" fill="none" stroke="#78350F" stroke-width="1"/>
+                <circle cx="335" cy="425" r="2" fill="#FEF08A"/>
+
+                <!-- Electrode Pad 2 -->
+                <circle cx="465" cy="425" r="10" fill="url(#goldPadGrad)" stroke="#FEF08A" stroke-width="1.4" filter="url(#glowGoldFilter)"/>
+                <circle cx="465" cy="425" r="5" fill="none" stroke="#78350F" stroke-width="1"/>
+                <circle cx="465" cy="425" r="2" fill="#FEF08A"/>
+
+                <!-- Electrode Pad 3 (Center Nape) -->
+                <circle cx="400" cy="455" r="8" fill="url(#goldPadGrad)" stroke="#FEF08A" stroke-width="1.2"/>
+
+                <text x="335" y="445" font-family="'JetBrains Mono'" font-size="7" fill="#FDE047" text-anchor="middle">24K Au</text>
+                <text x="465" y="445" font-family="'JetBrains Mono'" font-size="7" fill="#FDE047" text-anchor="middle">24K Au</text>
+              </g>
+
+              <!-- 1. AURICULAR tVNS EARHOOK & CONDUIT (Vagus Nerve Micro-Stimulation) -->
+              <g id="component1_Earhook">
+                <!-- Braided Micro-Conduit Ribbon routing up behind ear from neck band -->
+                <path d="M 290 350 C 270 320, 240 280, 230 220 C 225 180, 245 155, 265 165 C 285 175, 275 220, 252 225" 
+                      fill="none" stroke="url(#earhookGrad)" stroke-width="7" stroke-linecap="round"/>
+                <path d="M 290 350 C 270 320, 240 280, 230 220 C 225 180, 245 155, 265 165 C 285 175, 275 220, 252 225" 
+                      fill="none" stroke="rgba(157, 78, 221, 0.4)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4,3"/>
+
+                <!-- Ergonomic Concha Calming Pod (Earhook tip resting in cymba conchae) -->
+                <rect x="238" y="215" width="22" height="20" rx="6" 
+                      fill="#1E1B4B" stroke="var(--calming-purple)" stroke-width="2" filter="url(#glowPurpleFilter)"/>
+
+                <!-- Micro-Stimulation Contact Tips (Biphasic Gold Contacts) -->
+                <circle cx="244" cy="225" r="3.5" fill="#FDE047" stroke="#A855F7" stroke-width="1"/>
+                <circle cx="254" cy="225" r="3.5" fill="#FDE047" stroke="#A855F7" stroke-width="1"/>
+
+                <!-- Electric Micro-Arc Lightning (Fires during Stage 4 / tVNS active) -->
+                <g id="tvnsElectricArcs" opacity="0">
+                  <path d="M 244 225 Q 249 218 254 225" fill="none" stroke="#E9D5FF" stroke-width="1.8" filter="url(#glowPurpleFilter)"/>
+                  <path d="M 244 225 Q 249 232 254 225" fill="none" stroke="#C084FC" stroke-width="1.8" filter="url(#glowPurpleFilter)"/>
+                  <circle cx="249" cy="225" r="14" fill="none" stroke="var(--calming-purple)" stroke-width="1.5" stroke-dasharray="2,2"/>
+                </g>
+
+                <!-- Ascending Vagus Nerve Pathway Lines (NTS Brainstem Projection) -->
+                <g id="vagusNervePathway" opacity="0.3">
+                  <path d="M 248 225 C 270 200, 310 190, 350 170 C 380 155, 395 130, 400 95" 
+                        fill="none" stroke="#C084FC" stroke-width="2" stroke-dasharray="4,4"/>
+                  <circle cx="400" cy="95" r="5" fill="#9D4EDD" filter="url(#glowPurpleFilter)"/>
+                  <text x="415" y="98" font-family="'JetBrains Mono'" font-size="7.5" font-weight="700" fill="#E9D5FF">NTS / BRAIN STEM</text>
+                </g>
+              </g>
+
+              <!-- HOTSPOT PINS & CALLOUTS (1 to 5) -->
+              <!-- Hotspot 1: Auricular tVNS Earhook -->
+              <g class="hotspot-pin" id="pin1" transform="translate(249, 225)" onclick="selectHotspot(1)">
+                <circle class="hotspot-ring-pulse" cx="0" cy="0" r="12" fill="none" stroke="var(--calming-purple)" stroke-width="2"/>
+                <circle cx="0" cy="0" r="8" fill="#1E1B4B" stroke="var(--calming-purple)" stroke-width="2"/>
+                <text x="0" y="3" font-family="'JetBrains Mono'" font-size="7" font-weight="800" fill="#FFF" text-anchor="middle">1</text>
+              </g>
+
+              <!-- Hotspot 2: Gold-Plated Dry Electrodes -->
+              <g class="hotspot-pin" id="pin2" transform="translate(335, 425)" onclick="selectHotspot(2)">
+                <circle class="hotspot-ring-pulse" cx="0" cy="0" r="12" fill="none" stroke="var(--gold-contact)" stroke-width="2"/>
+                <circle cx="0" cy="0" r="8" fill="#3D2604" stroke="var(--gold-contact)" stroke-width="2"/>
+                <text x="0" y="3" font-family="'JetBrains Mono'" font-size="7" font-weight="800" fill="#FFF" text-anchor="middle">2</text>
+              </g>
+
+              <!-- Hotspot 3: Carotid PPG Pulse Sensor Hub -->
+              <g class="hotspot-pin" id="pin3" transform="translate(295, 365)" onclick="selectHotspot(3)">
+                <circle class="hotspot-ring-pulse" cx="0" cy="0" r="12" fill="none" stroke="var(--neon-cyan)" stroke-width="2"/>
+                <circle cx="0" cy="0" r="8" fill="#082F49" stroke="var(--neon-cyan)" stroke-width="2"/>
+                <text x="0" y="3" font-family="'JetBrains Mono'" font-size="7" font-weight="800" fill="#FFF" text-anchor="middle">3</text>
+              </g>
+
+              <!-- Hotspot 4: Edge TinyML MCU & Standalone GPS/LTE -->
+              <g class="hotspot-pin" id="pin4" transform="translate(400, 410)" onclick="selectHotspot(4)">
+                <circle class="hotspot-ring-pulse" cx="0" cy="0" r="12" fill="none" stroke="var(--neon-cyan)" stroke-width="2"/>
+                <circle cx="0" cy="0" r="8" fill="#082F49" stroke="var(--neon-cyan)" stroke-width="2"/>
+                <text x="0" y="3" font-family="'JetBrains Mono'" font-size="7" font-weight="800" fill="#FFF" text-anchor="middle">4</text>
+              </g>
+
+              <!-- Hotspot 5: Medical-Grade Liquid Silicone Chassis -->
+              <g class="hotspot-pin" id="pin5" transform="translate(485, 345)" onclick="selectHotspot(5)">
+                <circle class="hotspot-ring-pulse" cx="0" cy="0" r="12" fill="none" stroke="#38BDF8" stroke-width="2"/>
+                <circle cx="0" cy="0" r="8" fill="#0F172A" stroke="#38BDF8" stroke-width="2"/>
+                <text x="0" y="3" font-family="'JetBrains Mono'" font-size="7" font-weight="800" fill="#FFF" text-anchor="middle">5</text>
+              </g>
+
+            </svg>
+
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:11px; color:var(--text-muted); padding: 4px 6px;">
+            <span>FIGURE 1.2: ERGONOMIC NON-WATCH CERVICAL-AURICULAR ARCHITECTURE</span>
+            <span style="color:var(--neon-cyan);">TOTAL WEIGHT: 48 GRAMS (FEATHERLIGHT)</span>
+          </div>
+        </div>
+
+        <!-- Right: Hotspot Selection Pills & Deep-Dive Spec Card -->
+        <div class="hotspot-details-panel">
+
+          <!-- 5 Component Pills -->
+          <div class="hotspot-pill-list">
+            <div class="hotspot-pill-item active" data-spot="1" onclick="selectHotspot(1)">
+              <div class="hotspot-pill-badge" style="border-color:var(--calming-purple); color:#D8B4FE;">1</div>
+              <div class="hotspot-pill-text">
+                <div class="hotspot-pill-title">Auricular tVNS Earhook</div>
+                <div class="hotspot-pill-sub">Vagus nerve micro-stimulation for seizure disruption</div>
+              </div>
+            </div>
+
+            <div class="hotspot-pill-item" data-spot="2" onclick="selectHotspot(2)">
+              <div class="hotspot-pill-badge" style="border-color:var(--gold-contact); color:var(--gold-contact);">2</div>
+              <div class="hotspot-pill-text">
+                <div class="hotspot-pill-title">Gold-Plated Dry Electrodes</div>
+                <div class="hotspot-pill-sub">Biocompatible EDA/GSR sympathetic tracking</div>
+              </div>
+            </div>
+
+            <div class="hotspot-pill-item" data-spot="3" onclick="selectHotspot(3)">
+              <div class="hotspot-pill-badge">3</div>
+              <div class="hotspot-pill-text">
+                <div class="hotspot-pill-title">Carotid PPG Pulse Sensor Hub</div>
+                <div class="hotspot-pill-sub">High-accuracy arterial hemodynamics & HRV</div>
+              </div>
+            </div>
+
+            <div class="hotspot-pill-item" data-spot="4" onclick="selectHotspot(4)">
+              <div class="hotspot-pill-badge">4</div>
+              <div class="hotspot-pill-text">
+                <div class="hotspot-pill-title">Edge TinyML MCU & Standalone GPS/LTE</div>
+                <div class="hotspot-pill-sub">250Hz onboard inference without smartphone dependency</div>
+              </div>
+            </div>
+
+            <div class="hotspot-pill-item" data-spot="5" onclick="selectHotspot(5)">
+              <div class="hotspot-pill-badge" style="border-color:#38BDF8; color:#38BDF8;">5</div>
+              <div class="hotspot-pill-text">
+                <div class="hotspot-pill-title">Liquid Silicone Flexible Neck Chassis</div>
+                <div class="hotspot-pill-sub">ISO 10993 certified hypoallergenic memory titanium core</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Deep-Dive Spec Card -->
+          <div class="active-hotspot-spec-card" id="hotspotSpecCard">
+            <div class="spec-header">
+              <span id="specBadge" class="spec-badge">SUBSYSTEM 01 // ACTIVE INTERVENTION</span>
+              <span id="specStatus" style="font-family:var(--font-mono); font-size:10px; color:#34D399;">ONLINE</span>
+            </div>
+            <div id="specTitle" class="spec-title">Auricular tVNS Earhook (Vagus Nerve Micro-Stimulation)</div>
+            <div id="specDesc" class="spec-desc">
+              Clips comfortably over the ear with micro-electrode contacts resting directly in the cymba conchae of the external ear. Delivers non-invasive, 25Hz biphasic charge-balanced micro-stimulation to the Auricular Branch of the Vagus Nerve (ABVN), projecting afferent signals directly into the Nucleus Tractus Solitarius (NTS) to truncate cortical seizure synchronization.
+            </div>
+
+            <table class="spec-table">
+              <tbody id="specTableBody">
+                <tr>
+                  <td class="label">Stimulation Waveform</td>
+                  <td class="val">Biphasic Symmetrical Square Wave</td>
+                </tr>
+                <tr>
+                  <td class="label">Frequency & Current</td>
+                  <td class="val">25 Hz | 0.2 mA to 1.5 mA Adjustable</td>
+                </tr>
+                <tr>
+                  <td class="label">Pulse Duration</td>
+                  <td class="val">250 µs Phase Width</td>
+                </tr>
+                <tr>
+                  <td class="label">Safety Isolation</td>
+                  <td class="val">IEC 60601-1 Type BF Defibrillator Proof</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         TAB 3: BIOCOMPATIBLE & ANTI-ALLERGIC FOCUS SECTION
+         ======================================================================= -->
+    <section id="tabBiocompatibility" class="tab-section">
+
+      <div class="glass-card" style="padding: 22px;">
+        <div style="max-width: 860px;">
+          <span class="pricing-badge emerald" style="margin-bottom:8px;">CLINICAL-GRADE DERMATOLOGICAL INTEGRITY</span>
+          <h2 style="font-size:22px; font-weight:800; color:#FFF; margin-bottom:6px;">
+            Zero-Irritation, 24/7 Continuous Wear Biocompatibility
+          </h2>
+          <p style="font-size:13px; color:var(--text-muted); line-height:1.55;">
+            Epileptic patients must wear monitoring hardware continuously, including throughout nocturnal sleep when SUDEP risks peak. Traditional consumer wearables cause severe nickel contact dermatitis, while clinical wet gel electrodes break down the epidermal barrier within 48 hours. SEIZE ALERT is engineered from the ground up for zero-allergy compliance.
+          </p>
+        </div>
+      </div>
+
+      <!-- 3 Key Pillars -->
+      <div class="biocompatibility-grid">
+
+        <!-- Pillar 1: ISO 10993 Liquid Silicone Rubber -->
+        <div class="bio-card">
+          <div class="bio-icon-box cyan">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+            </svg>
+          </div>
+          <span class="bio-standard-tag">ISO 10993-5 & ISO 10993-10</span>
+          <div class="bio-card-title">Medical-Grade Liquid Silicone Rubber (LSR)</div>
+          <div class="bio-card-desc">
+            Platinum-cured LSR chassis certified for cytotoxicity zero-lysis and zero skin sensitization. Features micro-textured aeration grooves that vent perspiration during clonic convulsions, preventing maceration.
+          </div>
+          <ul class="bio-features-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>100% Latex-free & BPA-free medical elastomer</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sweat acidity resistant (pH 4.0 – 8.5 stable)</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>IP68 waterproof: Wearable in shower & exercise</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Pillar 2: Zero-Nickel Grade-5 Titanium & Zirconia -->
+        <div class="bio-card">
+          <div class="bio-icon-box gold">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <span class="bio-standard-tag">ZERO NICKEL // ASTM F136</span>
+          <div class="bio-card-title">Grade-5 Titanium & Zirconia Ceramic</div>
+          <div class="bio-card-desc">
+            Nickel is the #1 contact allergen in wearable devices (affecting up to 17% of women). SEIZE ALERT eliminates all stainless steel and nickel alloys in favor of aerospace Grade-5 ELI Titanium and high-polish Zirconia ceramic.
+          </div>
+          <ul class="bio-features-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Zero nickel leaching under human sweat exposure</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Thermally neutral Zirconia prevents cold shock</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Zero galvanic skin micro-burns</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Pillar 3: Hypoallergenic Dry Gold Contacts -->
+        <div class="bio-card">
+          <div class="bio-icon-box emerald">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <span class="bio-standard-tag">24K Au DRY CONTACT // NO GELS</span>
+          <div class="bio-card-title">Hypoallergenic Dry Gold Contacts</div>
+          <div class="bio-card-desc">
+            Traditional hospital Ag/AgCl electrodes rely on chemical adhesive hydrogels that induce erythema and contact eczema after 24–48 hours. SEIZE ALERT utilizes 24-Karat pure gold dry fractal contact pins requiring zero gels.
+          </div>
+          <ul class="bio-features-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Zero sticky adhesives or skin peeling trauma</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Unbroken 30-day wear without electrode degradation</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Charge-balanced biphasic DC offset &lt; 5mV</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Comparative Biocompatibility Matrix Table -->
+      <div class="table-container">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Dermatological Metric</th>
+              <th class="highlight">SEIZE ALERT (Cervical-Auricular)</th>
+              <th>Consumer Smartwatches</th>
+              <th>Clinical Wet Gel EEG/ECG</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primary Skin Contact Material</strong></td>
+              <td class="highlight">ISO 10993 Liquid Silicone + 24K Dry Gold</td>
+              <td>Fluoroelastomer + Nickel backplate</td>
+              <td>Polyacrylate Gel + Ag/AgCl foam</td>
+            </tr>
+            <tr>
+              <td><strong>Nickel Content</strong></td>
+              <td class="highlight"><span style="color:#34D399; font-weight:700;">0.0% (Zero-Nickel Grade-5 Ti)</span></td>
+              <td>Common in buckle pins & sensor ring</td>
+              <td>Typically nickel-free</td>
+            </tr>
+            <tr>
+              <td><strong>Maximum Continuous Wear Time</strong></td>
+              <td class="highlight"><span style="color:var(--neon-cyan); font-weight:700;">Indefinite 24/7 (Multi-week)</span></td>
+              <td>24–48 hours before sweat rash</td>
+              <td>24–48 hours max (skin breakdown)</td>
+            </tr>
+            <tr>
+              <td><strong>Gel/Adhesive Requirement</strong></td>
+              <td class="highlight">Zero Gels or Adhesives (Dry Contact)</td>
+              <td>None</td>
+              <td>Sticky chemical conductive hydrogel</td>
+            </tr>
+            <tr>
+              <td><strong>Sweat Aeration Channels</strong></td>
+              <td class="highlight">Micro-grooved hydrophobic channels</td>
+              <td>Flat occlusive band surface</td>
+              <td>Occlusive tape (traps moisture)</td>
+            </tr>
+            <tr>
+              <td><strong>Clinical Cytotoxicity Rating</strong></td>
+              <td class="highlight">ISO 10993-5 Grade 0 (Zero Cytotoxicity)</td>
+              <td>Uncertified consumer grade</td>
+              <td>Medical grade</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         TAB 4: UNIT ECONOMICS & PRICING TABLE (STRICTLY ₹ / INR ONLY)
+         ======================================================================= -->
+    <section id="tabEconomics" class="tab-section">
+
+      <div class="glass-card" style="padding: 22px;">
+        <span class="pricing-badge cyan" style="margin-bottom:8px;">MAKE IN INDIA // CDSCO CLASS B DISRUPTIVE ARCHITECTURE</span>
+        <h2 style="font-size:22px; font-weight:800; color:#FFF; margin-bottom:6px;">
+          Unit Economics & Market Disruption in India (₹ INR)
+        </h2>
+        <p style="font-size:13px; color:var(--text-muted); line-height:1.55;">
+          India has over <strong>12 Million people with epilepsy</strong> (accounting for 1/6th of global cases), with <strong>3.6 Million suffering from Drug-Resistant Epilepsy (DRE)</strong>. Imported foreign monitors cost ₹32,000–₹45,000+, provide ZERO active calming, and require recurring foreign currency subscriptions. SEIZE ALERT disrupts the market at a fraction of the cost.
+        </p>
+      </div>
+
+      <!-- 4 Core Pricing Summary Cards (₹ / INR ONLY) -->
+      <div class="pricing-summary-grid">
+
+        <!-- Card 1: Prototype Build Cost -->
+        <div class="pricing-card">
+          <div>
+            <span class="pricing-badge cyan">R&amp;D PROTOTYPE</span>
+            <div class="pricing-title" style="margin-top:8px;">Prototype Build Cost</div>
+          </div>
+          <div class="pricing-amount">₹4,800 – ₹6,500</div>
+          <div class="pricing-desc">
+            Fully populated custom PCB, 3D printed biocompatible chassis tooling, Nordic/ESP32 MCU, Quectel cellular GNSS modem, carotid PPG hub, and manual assembly testing.
+          </div>
+        </div>
+
+        <!-- Card 2: Mass Production COGS -->
+        <div class="pricing-card">
+          <div>
+            <span class="pricing-badge emerald">SCALED MANUFACTURING</span>
+            <div class="pricing-title" style="margin-top:8px;">Mass-Production Target COGS</div>
+          </div>
+          <div class="pricing-amount">₹3,800 – ₹4,500</div>
+          <div class="pricing-desc">
+            Tooling-amortized high-volume production (&gt;10k units): Automated SMT lines, bulk liquid silicone injection molding, integrated RF flex-PCB, and cleanroom packaging.
+          </div>
+        </div>
+
+        <!-- Card 3: Target Patient Retail Price (Primary) -->
+        <div class="pricing-card primary">
+          <div>
+            <span class="pricing-badge purple">DISRUPTIVE PATIENT PRICE</span>
+            <div class="pricing-title" style="margin-top:8px;">Target Patient Retail Price</div>
+          </div>
+          <div>
+            <div class="pricing-amount" style="color:var(--neon-cyan);">₹12,499</div>
+            <div style="font-size:13px; color:#C084FC; font-weight:700; margin-top:2px;">
+              or ₹599/month (Hardware-as-a-Service)
+            </div>
+          </div>
+          <div class="pricing-desc">
+            Direct-to-patient affordable price with integrated LTE-M cellular data package included. Hardware-as-a-service plan enables zero upfront barrier for low-income Indian families.
+          </div>
+        </div>
+
+        <!-- Card 4: Traditional Imported Clinical Monitors -->
+        <div class="pricing-card legacy">
+          <div>
+            <span class="pricing-badge red">LEGACY FOREIGN IMPORT</span>
+            <div class="pricing-title" style="margin-top:8px;">Imported Clinical Monitors</div>
+          </div>
+          <div class="pricing-amount" style="color:#FFA8A8;">₹32,000 – ₹45,000+</div>
+          <div class="pricing-desc">
+            Passive only, ZERO calming intervention. Requires mandatory paired smartphone, foreign import duties (up to 42%), and recurring foreign cloud fees (~₹1,500/mo).
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Detailed Bill of Materials (BOM) in Indian Rupees (₹) -->
+      <div class="bom-grid">
+
+        <div class="glass-card" style="padding: 20px;">
+          <div class="card-title-group" style="margin-bottom:14px;">
+            <div class="card-title-icon cyan" style="width:28px; height:28px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M3 9h18"/>
+                <path d="M9 21V9"/>
+              </svg>
+            </div>
+            <div>
+              <div class="card-title-text" style="font-size:14px;">Component Bill of Materials (BOM Architecture)</div>
+              <div class="card-subtitle">Volume Scale Cost Breakdown in Indian Rupees (₹)</div>
+            </div>
+          </div>
+
+          <table class="spec-table">
+            <thead>
+              <tr style="color:var(--text-dim); border-bottom:1px solid rgba(255,255,255,0.1);">
+                <th style="text-align:left; padding-bottom:8px;">Subsystem Component</th>
+                <th style="text-align:right; padding-bottom:8px;">Prototype</th>
+                <th style="text-align:right; padding-bottom:8px;">Mass COGS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="label">Dual-Core TinyML MCU (Nordic / ESP32-S3)</td>
+                <td class="val">₹620</td>
+                <td class="val" style="color:#34D399;">₹480</td>
+              </tr>
+              <tr>
+                <td class="label">Carotid Dual-Wavelength PPG Hub &amp; AFE</td>
+                <td class="val">₹480</td>
+                <td class="val" style="color:#34D399;">₹340</td>
+              </tr>
+              <tr>
+                <td class="label">6-Axis High-G Accelerometer/IMU (16g Range)</td>
+                <td class="val">₹310</td>
+                <td class="val" style="color:#34D399;">₹210</td>
+              </tr>
+              <tr>
+                <td class="label">24K Gold Dry EDA Electrodes &amp; Front-End</td>
+                <td class="val">₹420</td>
+                <td class="val" style="color:#34D399;">₹290</td>
+              </tr>
+              <tr>
+                <td class="label">Auricular tVNS Current Pump &amp; Safety Stage</td>
+                <td class="val">₹780</td>
+                <td class="val" style="color:#34D399;">₹520</td>
+              </tr>
+              <tr>
+                <td class="label">Quectel LTE-M / NB-IoT + GNSS Multi-Constellation</td>
+                <td class="val">₹1,350</td>
+                <td class="val" style="color:#34D399;">₹980</td>
+              </tr>
+              <tr>
+                <td class="label">Medical LSR Flexible Chassis &amp; Titanium Skeleton</td>
+                <td class="val">₹680</td>
+                <td class="val" style="color:#34D399;">₹460</td>
+              </tr>
+              <tr>
+                <td class="label">Li-Po 380mAh Battery &amp; Qi Wireless Charging</td>
+                <td class="val">₹440</td>
+                <td class="val" style="color:#34D399;">₹320</td>
+              </tr>
+              <tr>
+                <td class="label">SMT Assembly, Calibration, ISO 13485 Testing</td>
+                <td class="val">₹720</td>
+                <td class="val" style="color:#34D399;">₹500</td>
+              </tr>
+              <tr style="border-top:1px solid var(--border-cyan);">
+                <td style="font-weight:800; color:#FFF; padding-top:10px;">TOTAL HARDWARE BUILD COST</td>
+                <td class="val" style="color:var(--neon-cyan); font-weight:800; padding-top:10px;">₹5,800</td>
+                <td class="val" style="color:#34D399; font-weight:800; padding-top:10px;">₹4,100</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="glass-card" style="padding: 20px; display:flex; flex-direction:column; justify-content:space-between; gap:16px;">
+          <div>
+            <div class="card-title-group" style="margin-bottom:14px;">
+              <div class="card-title-icon emerald" style="width:28px; height:28px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div>
+                <div class="card-title-text" style="font-size:14px;">Indian Market Disruption Analysis</div>
+                <div class="card-subtitle">Why SEIZE ALERT Wins in the Indian Healthcare Ecosystem</div>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:12.5px; color:#CBD5E1; line-height:1.5;">
+              <div style="background:rgba(0,212,255,0.06); padding:10px 12px; border-radius:8px; border-left:3px solid var(--neon-cyan);">
+                <strong>65% Cost Reduction vs Imported Devices:</strong> Foreign monitors like Embrace2 retail at ₹32,000+ with 42% Indian customs duty, putting them out of reach for 90% of Indian families.
+              </div>
+              <div style="background:rgba(157,78,221,0.08); padding:10px 12px; border-radius:8px; border-left:3px solid var(--calming-purple);">
+                <strong>First Active Neuromodulation Device:</strong> Competitor devices only passively scream while the patient suffers a tonic-clonic convulsion. SEIZE ALERT actively calms the vagal pathway to truncate seizure duration.
+              </div>
+              <div style="background:rgba(16,185,129,0.08); padding:10px 12px; border-radius:8px; border-left:3px solid var(--medical-emerald);">
+                <strong>₹599/month HaaS Business Model:</strong> Low-income tier-2 and tier-3 Indian families can subscribe without any upfront device purchase barrier, supported by CSR foundations and Jan Aushadhi channels.
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#060A12; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); font-family:var(--font-mono); font-size:11px;">
+            <div style="color:var(--text-dim);">PROJECTED INDIAN MARKET TAM (12M PATIENTS):</div>
+            <div style="font-size:16px; font-weight:800; color:#FFFFFF; margin-top:4px;">
+              ₹4,500+ Crore Addressable Domestic Market
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         TAB 5: WEB SERIAL & EDGE TELEMETRY CONSOLE
+         ======================================================================= -->
+    <section id="tabSerial" class="tab-section">
+
+      <div class="glass-card" style="padding: 18px 22px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:800; color:#FFF;">Web Serial API Telemetry Console</h2>
+            <p style="font-size:12px; color:var(--text-muted);">
+              Direct hardware streaming interface using browser Web Serial API (<code style="color:var(--neon-cyan);">navigator.serial</code>). Connect physical ESP32 / Nordic dev-kit via USB, or activate the virtual COM simulator!
+            </p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button id="btnToggleVirtualSerial" class="btn-action" style="font-size:12px; border-color:var(--border-purple); color:#D8B4FE;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="10 8 16 12 10 16 10 8"/>
+              </svg>
+              <span id="virtualSerialText">Simulate ESP32 (COM3)</span>
+            </button>
+            <button id="btnConnectSerial" class="btn-action btn-serial">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+              <span id="btnConnectSerialText">Connect USB Device</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="serial-layout">
+
+        <!-- Left: Configuration & Port Stats -->
+        <div class="serial-config-card">
+          <div style="font-size:13px; font-weight:700; color:#FFF;">Serial Port Parameters</div>
+
+          <div class="serial-form-group">
+            <label>Baud Rate (bps):</label>
+            <select id="serialBaudRate" class="serial-select">
+              <option value="115200" selected>115200 (Standard ESP32/Nordic)</option>
+              <option value="9600">9600 (Legacy)</option>
+              <option value="230400">230400 (High Speed)</option>
+              <option value="921600">921600 (Raw 250Hz Multi-Channel)</option>
+            </select>
+          </div>
+
+          <div class="serial-form-group">
+            <label>Data Format:</label>
+            <input type="text" class="serial-input" value="JSON Lines (\r\n delimited)" readonly>
+          </div>
+
+          <div class="serial-form-group">
+            <label>Serial Connection State:</label>
+            <div id="serialStatusBadge" class="pricing-badge" style="background:rgba(255,255,255,0.06); color:var(--text-muted); padding:6px 10px;">
+              DISCONNECTED
+            </div>
+          </div>
+
+          <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:12px; display:flex; flex-direction:column; gap:8px; font-family:var(--font-mono); font-size:11px;">
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-dim);">Packets Received:</span>
+              <span id="statPacketsRx" style="color:#FFF; font-weight:700;">0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-dim);">Packet Rate:</span>
+              <span id="statPacketRate" style="color:var(--neon-cyan);">0.0 Hz</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-dim);">CRC Errors / Drops:</span>
+              <span style="color:#34D399;">0 (0.0%)</span>
+            </div>
+          </div>
+
+          <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; font-family:var(--font-mono); font-size:10px; color:var(--text-muted);">
+            Expected JSON Payload Format:<br>
+            <span style="color:var(--neon-cyan);">{"hr":72, "g":0.02, "eda":2.1, "tvns":0, "stage":1}</span>
+          </div>
+        </div>
+
+        <!-- Right: Raw Serial Terminal Output -->
+        <div class="serial-terminal-card">
+          <div class="serial-terminal-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="terminal-dots">
+                <span class="t-dot r"></span>
+                <span class="t-dot y"></span>
+                <span class="t-dot g"></span>
+              </div>
+              <span style="color:#E2E8F0; font-weight:700;">RAW USB CDC-ACM TELEMETRY FEED</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button id="btnClearSerial" class="btn-action" style="font-size:10px; padding:3px 8px;">Clear</button>
+            </div>
+          </div>
+
+          <div id="serialTerminalBody" class="serial-terminal-body">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         TAB 6: EXECUTIVE CLINICAL PITCH DECK
+         ======================================================================= -->
+    <section id="tabPitch" class="tab-section">
+
+      <div class="glass-card" style="padding: 24px;">
+        <span class="pricing-badge purple" style="margin-bottom:8px;">INVESTOR &amp; CLINICIAN EXECUTIVE BRIEFING</span>
+        <h2 style="font-size:24px; font-weight:800; color:#FFF; margin-bottom:8px;">
+          SEIZE ALERT: Revolutionizing Epilepsy Care Through Active Neuromodulation
+        </h2>
+        <p style="font-size:13.5px; color:#CBD5E1; line-height:1.6; max-width:980px;">
+          Epilepsy affects over 50 million people worldwide and 12 million in India alone. Despite dozens of anti-seizure medications (ASMs), 30% of patients remain refractory to pharmaceutical intervention. SUDEP (Sudden Unexpected Death in Epilepsy) claims thousands of lives annually during unsupervised nocturnal seizures. SEIZE ALERT bridges the catastrophic gap between passive detection and life-saving closed-loop therapeutic intervention.
+        </p>
+      </div>
+
+      <div class="pitch-deck-grid">
+
+        <div class="pitch-deck-card">
+          <span class="pitch-step-pill">PILLAR 01 // THE CLINICAL CHALLENGE</span>
+          <div class="pitch-deck-title">The "Passive Monitor" Trap</div>
+          <div class="pitch-deck-body">
+            Existing monitors (smartwatches, bed sensors) are purely passive. They send an alert <em>after</em> a seizure starts, but provide zero medical help. If the caregiver is asleep or in another room, the patient suffers prolonged hypoxia, brain trauma from falls, or SUDEP.
+          </div>
+        </div>
+
+        <div class="pitch-deck-card">
+          <span class="pitch-step-pill" style="color:var(--calming-purple); border-color:var(--border-purple); background:var(--calming-purple-dim);">PILLAR 02 // ACTIVE THERAPY</span>
+          <div class="pitch-deck-title">Closed-Loop Vagus Nerve Disruption</div>
+          <div class="pitch-deck-body">
+            SEIZE ALERT couples edge TinyML detection with immediate auricular transcutaneous vagus nerve stimulation (tVNS). By stimulating the cymba conchae, afferent signals rapidly activate the locus coeruleus and NTS, aborting hypersynchronous thalamocortical seizure bursts before motor culmination.
+          </div>
+        </div>
+
+        <div class="pitch-deck-card">
+          <span class="pitch-step-pill" style="color:#34D399; border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.12);">PILLAR 03 // NON-WATCH FORM FACTOR</span>
+          <div class="pitch-deck-title">Cervical-Auricular Anatomical Advantage</div>
+          <div class="pitch-deck-body">
+            Wrist-worn sensors have a 68% false alarm rate due to mundane arm motions (brushing teeth, cooking). The cervical neck position monitors carotid arterial hemodynamics directly with 99.4% SNR and provides direct proximity to Arnold's nerve in the ear.
+          </div>
+        </div>
+
+        <div class="pitch-deck-card">
+          <span class="pitch-step-pill">PILLAR 04 // ZERO PHONE DEPENDENCY</span>
+          <div class="pitch-deck-title">Standalone Cellular (LTE-M)</div>
+          <div class="pitch-deck-body">
+            When a patient experiences an acute aura, their phone is often locked, out of Bluetooth range, or dropped. SEIZE ALERT integrates an onboard Quectel cellular modem with direct emergency SMS/call dispatch and multi-constellation GNSS positioning.
+          </div>
+        </div>
+
+        <div class="pitch-deck-card">
+          <span class="pitch-step-pill" style="color:var(--gold-contact); border-color:rgba(245,208,97,0.3); background:rgba(245,208,97,0.12);">PILLAR 05 // DERMATOLOGICAL INTEGRITY</span>
+          <div class="pitch-deck-title">ISO 10993 Biocompatibility</div>
+          <div class="pitch-deck-body">
+            Engineered with zero nickel, platinum-cured liquid silicone rubber, and 24K pure gold dry electrodes. Patients can wear the band 24 hours a day, 7 days a week, without chemical gel burns, contact dermatitis, or skin erosion.
+          </div>
+        </div>
+
+        <div class="pitch-deck-card">
+          <span class="pitch-step-pill" style="color:#38BDF8; border-color:rgba(56,189,248,0.3); background:rgba(56,189,248,0.12);">PILLAR 06 // MARKET DISRUPTION</span>
+          <div class="pitch-deck-title">India First / Global Scaling</div>
+          <div class="pitch-deck-body">
+            With prototype build costs between ₹4,800–₹6,500 and target patient pricing of ₹12,499 (or ₹599/month HaaS), SEIZE ALERT shatters the ₹32,000–₹45,000 import barrier to bring life-saving technology to millions in India.
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       FOOTER STATUS BAR
+       ========================================================================= -->
+  <footer class="app-footer">
+    <div>
+      <strong>SEIZE ALERT</strong> — Medical-Grade Closed-Loop Epilepsy Technology. CDSCO Medical Device Roadmap / ISO 13485 Compliant.
+    </div>
+    <div>
+      Currency strictly in Indian Rupees (₹ / INR) • Designed for SRM Ramapuram Hackathon & Clinical Showcase
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       JAVASCRIPT: SIGNAL OSCILLOSCOPES, AUDIO SYNTH, 5-STAGE STATE MACHINE,
+                   WEB SERIAL API & HOTSPOT INTERACTION
+       ========================================================================= -->
+  <script>
+    /* =========================================================================
+       1. GLOBAL SYSTEM STATE
+       ========================================================================= */
+    const State = {
+      activeTab: 'tabSimulator',
+      stage: 1, // 1 to 5
+      isAutoDemoRunning: false,
+      autoDemoTimer: null,
+      countdownTimer: null,
+      countdownVal: 10.0,
+      overrideArmed: false,
+
+      // Live Telemetry Vitals
+      vitals: {
+        hr: 72,
+        targetHr: 72,
+        hrv: 64,
+        targetHrv: 64,
+        eda: 2.1,
+        targetEda: 2.1,
+        motionG: 0.02,
+        targetMotionG: 0.02,
+        tvnsCurrent: 0.0,
+        targetTvnsCurrent: 0.0,
+        tvnsPulseWidth: 0,
+        targetTvnsPulseWidth: 0
+      },
+
+      // Web Audio Synth
+      audioEnabled: true,
+      audioCtx: null,
+      tvnsOscNode: null,
+      tvnsGainNode: null,
+      lastHeartBeatTime: 0,
+
+      // Web Serial API
+      serialPort: null,
+      serialReader: null,
+      serialKeepReading: false,
+      isVirtualSerial: false,
+      virtualSerialInterval: null,
+      packetsRx: 0,
+      packetRateTimer: null,
+      packetsInSec: 0,
+
+      // Active Hardware Hotspot
+      activeHotspot: 1,
+      schematicMode: 'hotspots' // 'hotspots' | 'xray' | 'pathway'
+    };
+
+    /* =========================================================================
+       2. WEB AUDIO API SYNTHESIZER (ZERO EXTERNAL SOUND ASSETS)
+       Synthesizes 25Hz modulated micro-pulses, heart monitor pips, alarm sirens,
+       and safety disarm chimes!
+       ========================================================================= */
+    class MedicalAudioSynthesizer {
+      constructor() {
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq, type = 'sine', duration = 0.08, gainVal = 0.08) {
+        if (!State.audioEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+      }
+
+      // Normal heart monitor pip (synced to carotid PPG BPM)
+      playHeartPip() {
+        if (State.stage === 4) return; // Mute pip during active tVNS buzzing
+        this.playTone(880, 'sine', 0.04, 0.03);
+      }
+
+      // Pre-ictal aura warning alert chime
+      playWarningAlert() {
+        if (!State.audioEnabled) return;
+        this.playTone(659.25, 'triangle', 0.12, 0.08); // E5
+        setTimeout(() => this.playTone(880, 'triangle', 0.18, 0.09), 120); // A5
+      }
+
+      // High-priority seizure alarm beep
+      playSeizureAlarm() {
+        if (!State.audioEnabled) return;
+        this.playTone(1174, 'sawtooth', 0.14, 0.09);
+        setTimeout(() => this.playTone(1480, 'sawtooth', 0.14, 0.09), 120);
+      }
+
+      // Recessed button tactile cancel chime
+      playOverrideChime() {
+        if (!State.audioEnabled) return;
+        this.playTone(523.25, 'sine', 0.08, 0.07);
+        setTimeout(() => this.playTone(659.25, 'sine', 0.14, 0.08), 80);
+      }
+
+      // Calmed harmonic resolution chord
+      playCalmedChord() {
+        if (!State.audioEnabled) return;
+        this.playTone(523.25, 'sine', 0.35, 0.05); // C5
+        setTimeout(() => this.playTone(659.25, 'sine', 0.35, 0.05), 80); // E5
+        setTimeout(() => this.playTone(783.99, 'sine', 0.45, 0.05), 160); // G5
+        setTimeout(() => this.playTone(1046.5, 'sine', 0.55, 0.05), 240); // C6
+      }
+
+      // AUDIBLE tVNS MICRO-PULSE RHYTHM (25Hz modulated neuromodulation pulse train)
+      startTvnsAudioPulse() {
+        if (!State.audioEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        this.stopTvnsAudioPulse();
+
+        try {
+          // Carrier oscillator
+          const carrier = this.ctx.createOscillator();
+          carrier.type = 'sawtooth';
+          carrier.frequency.value = 160; // 160Hz pleasant carrier
+
+          // 25Hz square wave modulator for the clinical 25Hz vagus pulse train
+          const modulator = this.ctx.createOscillator();
+          modulator.type = 'square';
+          modulator.frequency.value = 25; // 25 Hz biphasic pulse rate
+
+          const modGain = this.ctx.createGain();
+          modGain.gain.value = 85;
+          modulator.connect(carrier.frequency);
+
+          const mainGain = this.ctx.createGain();
+          mainGain.gain.setValueAtTime(0.06, this.ctx.currentTime);
+
+          carrier.connect(mainGain);
+          mainGain.connect(this.ctx.destination);
+
+          carrier.start();
+          modulator.start();
+
+          this.tvnsCarrier = carrier;
+          this.tvnsModulator = modulator;
+          this.tvnsGain = mainGain;
+        } catch (e) {}
+      }
+
+      stopTvnsAudioPulse() {
+        try {
+          if (this.tvnsCarrier) {
+            this.tvnsCarrier.stop();
+            this.tvnsCarrier.disconnect();
+            this.tvnsCarrier = null;
+          }
+          if (this.tvnsModulator) {
+            this.tvnsModulator.stop();
+            this.tvnsModulator.disconnect();
+            this.tvnsModulator = null;
+          }
+        } catch (e) {}
+      }
+    }
+
+    const sound = new MedicalAudioSynthesizer();
+
+    /* =========================================================================
+       3. 5-STAGE CLOSED-LOOP ENGINE TRANSITIONS
+       ========================================================================= */
+    const stageSpecs = {
+      1: {
+        name: 'Normal Baseline',
+        tag: 'STAGE 1: NORMAL BASELINE',
+        tagBg: 'rgba(0, 212, 255, 0.15)',
+        tagColor: 'var(--neon-cyan)',
+        tagBorder: 'var(--border-cyan)',
+        hr: 72, hrv: 64, eda: 2.1, motionG: 0.02, tvnsCurrent: 0.0, tvnsPulseWidth: 0,
+        tvnsActive: false,
+        alarmClass: '',
+        smsStatus: 'STANDBY',
+        smsClass: 'pricing-badge cyan'
+      },
+      2: {
+        name: 'Pre-Ictal Aura',
+        tag: 'STAGE 2: PRE-ICTAL AURA (T-45s DETECT)',
+        tagBg: 'rgba(255, 159, 10, 0.15)',
+        tagColor: 'var(--alert-amber)',
+        tagBorder: 'var(--border-amber)',
+        hr: 98, hrv: 19, eda: 7.8, motionG: 0.18, tvnsCurrent: 0.0, tvnsPulseWidth: 0,
+        tvnsActive: false,
+        alarmClass: '',
+        smsStatus: 'EARLY WARNING ARMED',
+        smsClass: 'pricing-badge amber'
+      },
+      3: {
+        name: 'Tonic-Clonic Seizure',
+        tag: 'STAGE 3: TONIC-CLONIC SEIZURE DETECTED',
+        tagBg: 'rgba(255, 59, 48, 0.2)',
+        tagColor: '#FF6B6B',
+        tagBorder: 'rgba(255, 59, 48, 0.4)',
+        hr: 162, hrv: 8, eda: 14.5, motionG: 4.6, tvnsCurrent: 0.0, tvnsPulseWidth: 0,
+        tvnsActive: false,
+        alarmClass: 'seizure-alarm-active',
+        smsStatus: 'CRITICAL ICTAL EVENT',
+        smsClass: 'pricing-badge red'
+      },
+      4: {
+        name: 'Active tVNS Calming',
+        tag: 'STAGE 4: ACTIVE tVNS INTERVENTION (25Hz)',
+        tagBg: 'rgba(157, 78, 221, 0.22)',
+        tagColor: '#D8B4FE',
+        tagBorder: 'var(--border-purple)',
+        hr: 92, hrv: 42, eda: 5.2, motionG: 0.45, tvnsCurrent: 1.2, tvnsPulseWidth: 250,
+        tvnsActive: true,
+        alarmClass: 'tvns-calming-active',
+        smsStatus: 'tVNS DELIVERING',
+        smsClass: 'pricing-badge purple'
+      },
+      5: {
+        name: 'Autonomous Emergency GPS Dispatch',
+        tag: 'STAGE 5: AUTONOMOUS LTE-M SOS TRANSMITTED',
+        tagBg: 'rgba(0, 212, 255, 0.2)',
+        tagColor: '#38BDF8',
+        tagBorder: 'rgba(56, 189, 248, 0.4)',
+        hr: 76, hrv: 58, eda: 2.8, motionG: 0.06, tvnsCurrent: 0.0, tvnsPulseWidth: 0,
+        tvnsActive: false,
+        alarmClass: '',
+        smsStatus: '108 EMS & CAREGIVERS DISPATCHED',
+        smsClass: 'pricing-badge emerald'
+      }
+    };
+
+    function setStage(stageNum) {
+      if (stageNum < 1 || stageNum > 5) return;
+      State.stage = stageNum;
+      const spec = stageSpecs[stageNum];
+
+      // Update target vitals for smooth lerp in oscilloscope
+      State.vitals.targetHr = spec.hr;
+      State.vitals.targetHrv = spec.hrv;
+      State.vitals.targetEda = spec.eda;
+      State.vitals.targetMotionG = spec.motionG;
+      State.vitals.targetTvnsCurrent = spec.tvnsCurrent;
+      State.vitals.targetTvnsPulseWidth = spec.tvnsPulseWidth;
+
+      // Update Stage Tag in Stepper Header
+      const activeStageTag = document.getElementById('activeStageTag');
+      activeStageTag.textContent = spec.tag;
+      activeStageTag.style.background = spec.tagBg;
+      activeStageTag.style.color = spec.tagColor;
+      activeStageTag.style.borderColor = spec.tagBorder;
+
+      // Update Stage Items Selection
+      const stageItems = document.querySelectorAll('.stage-item');
+      stageItems.forEach(item => {
+        const s = parseInt(item.getAttribute('data-stage'));
+        if (s === stageNum) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+
+      // Handle Screen Border Alert Vignette
+      document.body.className = spec.alarmClass;
+
+      // Handle Hardware Diagram Elements (tVNS Arcs & LED)
+      const tvnsArcs = document.getElementById('tvnsElectricArcs');
+      const tvnsLed = document.getElementById('ledTvnsHardware');
+      const tickerTvns = document.getElementById('tickerTvnsState');
+
+      if (spec.tvnsActive) {
+        if (tvnsArcs) tvnsArcs.setAttribute('opacity', '1');
+        if (tvnsLed) tvnsLed.setAttribute('fill', '#9D4EDD');
+        if (tickerTvns) tickerTvns.textContent = 'ACTIVE (25Hz Biphasic Micro-Stim @ 1.2mA)';
+        sound.startTvnsAudioPulse();
+      } else {
+        if (tvnsArcs) tvnsArcs.setAttribute('opacity', '0');
+        if (tvnsLed) tvnsLed.setAttribute('fill', '#64748B');
+        if (tickerTvns) tickerTvns.textContent = 'ARMED (25Hz Biphasic @ 1.2mA)';
+        sound.stopTvnsAudioPulse();
+      }
+
+      // Handle Audio Triggers per Stage
+      if (stageNum === 2) {
+        sound.playWarningAlert();
+        startCountdownTimer();
+      } else {
+        stopCountdownTimer();
+      }
+
+      if (stageNum === 3) {
+        sound.playSeizureAlarm();
+      }
+
+      if (stageNum === 5) {
+        sound.playCalmedChord();
+      }
+
+      // Handle Recessed Button Glow / Alert State
+      const btnOverride = document.getElementById('btnCancelOverride');
+      if (stageNum === 2 || stageNum === 3) {
+        btnOverride.classList.add('active-alarm');
+        State.overrideArmed = true;
+      } else {
+        btnOverride.classList.remove('active-alarm');
+        State.overrideArmed = false;
+      }
+
+      // Handle SMS Card Dispatching State
+      const smsCard = document.getElementById('smsCard');
+      const smsBadge = document.getElementById('smsStatusBadge');
+      const smsText = document.getElementById('smsTextBody');
+
+      smsBadge.textContent = spec.smsStatus;
+      smsBadge.className = spec.smsClass;
+
+      if (stageNum >= 3) {
+        smsCard.classList.add('dispatched');
+      } else {
+        smsCard.classList.remove('dispatched');
+      }
+
+      if (stageNum === 5) {
+        smsText.innerHTML = `🚨 <strong>SEIZE ALERT LTE-M DISPATCH:</strong> Patient #SA-IND-104 stabilized following clonic disruption. Standalone GPS fix: <strong>SRM Ramapuram Block 3 (13.0329° N, 80.1806° E)</strong>. Ambulance Unit 108 notified.`;
+      } else if (stageNum === 4) {
+        smsText.innerHTML = `⚡ <strong>tVNS ACTIVE INTERVENTION:</strong> Earhook micro-stimulation delivering 25Hz pulses. Autonomic decelerations underway.`;
+      } else if (stageNum === 3) {
+        smsText.innerHTML = `🚨 <strong>CRITICAL SEIZURE IN PROGRESS:</strong> 4.6g clonic accelerations detected. Ictal tachycardia (162 BPM). tVNS intervention deploying.`;
+      } else {
+        smsText.innerHTML = `🚨 <strong>SEIZE ALERT SOS:</strong> Patient #SA-IND-104. Continuous monitoring active. Zero unhandled seizures.`;
+      }
+
+      // Log in Serial Console if active
+      appendSerialLog('STAGE', `Simulator transitioned to: ${spec.name}`, 'ok');
+    }
+
+    // 10-Second Countdown for Pre-Ictal False Alarm Override
+    function startCountdownTimer() {
+      stopCountdownTimer();
+      State.countdownVal = 10.0;
+      const bar = document.getElementById('countdownBar');
+      const fill = document.getElementById('countdownFill');
+      const text = document.getElementById('countdownText');
+      if (bar) bar.style.display = 'block';
+
+      State.countdownTimer = setInterval(() => {
+        State.countdownVal -= 0.1;
+        if (text) text.textContent = `OVERRIDE: ${Math.max(0, State.countdownVal).toFixed(1)}s`;
+        if (fill) fill.style.width = `${(State.countdownVal / 10.0) * 100}%`;
+
+        if (State.countdownVal <= 0) {
+          stopCountdownTimer();
+          // Auto advance to Stage 3 if not overridden!
+          if (State.stage === 2) {
+            setStage(3);
+          }
+        }
+      }, 100);
+    }
+
+    function stopCountdownTimer() {
+      if (State.countdownTimer) {
+        clearInterval(State.countdownTimer);
+        State.countdownTimer = null;
+      }
+      const bar = document.getElementById('countdownBar');
+      const text = document.getElementById('countdownText');
+      if (bar) bar.style.display = 'none';
+      if (text) text.textContent = 'T-45s DETECT';
+    }
+
+    // False Alarm Override Action
+    function cancelFalseAlarm() {
+      sound.playOverrideChime();
+      stopCountdownTimer();
+      stopAutoDemo();
+      appendSerialLog('OVERRIDE', 'Tactile button pressed: False Alarm Cancelled by patient.', 'ok');
+      setStage(1);
+    }
+
+    // Advance to Next Stage
+    function advanceNextStage() {
+      let next = State.stage + 1;
+      if (next > 5) next = 1;
+      setStage(next);
+    }
+
+    // Auto-Pitch Sequence (Simulates clinical timeline)
+    function toggleAutoPitchDemo() {
+      if (State.isAutoDemoRunning) {
+        stopAutoDemo();
+      } else {
+        startAutoDemo();
+      }
+    }
+
+    function startAutoDemo() {
+      State.isAutoDemoRunning = true;
+      document.getElementById('autoDemoText').textContent = 'Stop Demo';
+      setStage(1);
+
+      const timeline = [
+        { stage: 2, delay: 3500 },
+        { stage: 3, delay: 8500 },
+        { stage: 4, delay: 13500 },
+        { stage: 5, delay: 18500 },
+        { stage: 1, delay: 24000 }
+      ];
+
+      State.autoTimers = [];
+      timeline.forEach(step => {
+        const t = setTimeout(() => {
+          if (State.isAutoDemoRunning) {
+            setStage(step.stage);
+            if (step.stage === 1) {
+              stopAutoDemo();
+            }
+          }
+        }, step.delay);
+        State.autoTimers.push(t);
+      });
+    }
+
+    function stopAutoDemo() {
+      State.isAutoDemoRunning = false;
+      document.getElementById('autoDemoText').textContent = 'Run Full 5-Stage Demo';
+      if (State.autoTimers) {
+        State.autoTimers.forEach(t => clearTimeout(t));
+        State.autoTimers = [];
+      }
+    }
+
+    /* =========================================================================
+       4. 60 FPS OSCILLOSCOPE CANVAS WAVEFORM RENDERING
+       Real-time waveforms for:
+       1. 6-Axis Motion Vector (g)
+       2. Carotid Arterial Pulse (PPG) & Heart Rate
+       3. 24K Dry Gold EDA/GSR (µS)
+       4. Auricular tVNS Active Neuromodulation
+       ========================================================================= */
+    const canvasMotion = document.getElementById('canvasMotion');
+    const canvasPPG = document.getElementById('canvasPPG');
+    const canvasEDA = document.getElementById('canvasEDA');
+    const canvasTVNS = document.getElementById('canvasTVNS');
+    const canvasRadar = document.getElementById('canvasRadarSweep');
+
+    const ctxMotion = canvasMotion ? canvasMotion.getContext('2d') : null;
+    const ctxPPG = canvasPPG ? canvasPPG.getContext('2d') : null;
+    const ctxEDA = canvasEDA ? canvasEDA.getContext('2d') : null;
+    const ctxTVNS = canvasTVNS ? canvasTVNS.getContext('2d') : null;
+    const ctxRadar = canvasRadar ? canvasRadar.getContext('2d') : null;
+
+    // Waveform ring buffers
+    const BUFFER_SIZE = 300;
+    const motionBuffer = new Array(BUFFER_SIZE).fill(0.02);
+    const ppgBuffer = new Array(BUFFER_SIZE).fill(0);
+    const edaBuffer = new Array(BUFFER_SIZE).fill(2.1);
+    const tvnsBuffer = new Array(BUFFER_SIZE).fill(0);
+
+    let wavePhase = 0;
+    let radarAngle = 0;
+
+    function resizeCanvases() {
+      [canvasMotion, canvasPPG, canvasEDA, canvasTVNS].forEach(c => {
+        if (!c) return;
+        c.width = c.parentElement.clientWidth * window.devicePixelRatio || 600;
+        c.height = c.parentElement.clientHeight * window.devicePixelRatio || 90;
+      });
+      if (canvasRadar) {
+        canvasRadar.width = canvasRadar.parentElement.clientWidth * window.devicePixelRatio || 350;
+        canvasRadar.height = canvasRadar.parentElement.clientHeight * window.devicePixelRatio || 180;
+      }
+    }
+    window.addEventListener('resize', resizeCanvases);
+
+    function renderWaveforms() {
+      // Smooth lerp vitals toward targets
+      const v = State.vitals;
+      v.hr += (v.targetHr - v.hr) * 0.05;
+      v.hrv += (v.targetHrv - v.hrv) * 0.05;
+      v.eda += (v.targetEda - v.eda) * 0.05;
+      v.motionG += (v.targetMotionG - v.motionG) * 0.06;
+      v.tvnsCurrent += (v.targetTvnsCurrent - v.tvnsCurrent) * 0.08;
+      v.tvnsPulseWidth += (v.targetTvnsPulseWidth - v.tvnsPulseWidth) * 0.08;
+
+      // Update text displays
+      const valMotionG = document.getElementById('valMotionG');
+      const valHeartBPM = document.getElementById('valHeartBPM');
+      const valHRV = document.getElementById('valHRV');
+      const valEDA = document.getElementById('valEDA');
+      const valTvnsCurrent = document.getElementById('valTvnsCurrent');
+      const valTvnsPulseWidth = document.getElementById('valTvnsPulseWidth');
+
+      if (valMotionG) valMotionG.textContent = `${v.motionG.toFixed(2)} g`;
+      if (valHeartBPM) valHeartBPM.textContent = `${Math.round(v.hr)} BPM`;
+      if (valHRV) valHRV.textContent = `${Math.round(v.hrv)} ms`;
+      if (valEDA) valEDA.textContent = `${v.eda.toFixed(1)} µS`;
+      if (valTvnsCurrent) valTvnsCurrent.textContent = `${v.tvnsCurrent.toFixed(1)} mA`;
+      if (valTvnsPulseWidth) valTvnsPulseWidth.textContent = `${Math.round(v.tvnsPulseWidth)} µs`;
+
+      // Trigger heart monitor pips based on BPM
+      const now = performance.now();
+      const beatInterval = 60000 / v.hr;
+      if (now - State.lastHeartBeatTime >= beatInterval) {
+        State.lastHeartBeatTime = now;
+        sound.playHeartPip();
+      }
+
+      wavePhase += 0.08;
+
+      // 1. Generate Next Motion Sample
+      let motionSample = 0.02;
+      if (State.stage === 3) {
+        // High-g clonic spikes (4-6Hz violent oscillation)
+        const clonicOsc = Math.sin(wavePhase * 3.8) * Math.sin(wavePhase * 1.2);
+        const noise = (Math.random() - 0.5) * 0.8;
+        motionSample = v.motionG * Math.abs(clonicOsc) + noise;
+      } else if (State.stage === 2) {
+        // Pre-ictal sub-threshold micro tremor
+        motionSample = 0.18 + Math.sin(wavePhase * 5.0) * 0.08 + (Math.random() - 0.5) * 0.04;
+      } else if (State.stage === 4) {
+        // Calming dampening
+        motionSample = v.motionG * Math.sin(wavePhase * 2.0) + (Math.random() - 0.5) * 0.08;
+      } else {
+        // Resting baseline drift
+        motionSample = 0.02 + Math.sin(wavePhase * 0.3) * 0.01 + (Math.random() - 0.5) * 0.005;
+      }
+      motionBuffer.push(motionSample);
+      motionBuffer.shift();
+
+      // 2. Generate Carotid PPG Sample (Dicrotic Notch Arterial Waveform)
+      const ppgFreq = (v.hr / 60) * 0.12;
+      const t = (wavePhase * ppgFreq) % (Math.PI * 2);
+      let ppgSample = 0;
+      if (t < 0.6) {
+        ppgSample = Math.sin((t / 0.6) * Math.PI); // Systolic peak
+      } else if (t < 1.2) {
+        ppgSample = 0.35 * Math.sin(((t - 0.6) / 0.6) * Math.PI); // Dicrotic notch
+      } else {
+        ppgSample = 0; // Diastolic pause
+      }
+      // Add slight jitter if high tachycardia
+      if (State.stage === 3) ppgSample += (Math.random() - 0.5) * 0.15;
+      ppgBuffer.push(ppgSample);
+      ppgBuffer.shift();
+
+      // 3. Generate EDA Sample (Galvanic Skin Response)
+      let edaSample = v.eda + Math.sin(wavePhase * 0.15) * 0.1 + (Math.random() - 0.5) * 0.05;
+      edaBuffer.push(edaSample);
+      edaBuffer.shift();
+
+      // 4. Generate tVNS Micro-Pulse Train Sample (25Hz Biphasic)
+      let tvnsSample = 0;
+      if (State.stage === 4) {
+        // 25Hz square wave bursts
+        const pulseCycle = (wavePhase * 3.2) % (Math.PI * 2);
+        tvnsSample = pulseCycle < Math.PI ? 1.0 : -1.0;
+        tvnsSample *= (v.tvnsCurrent / 1.5);
+      }
+      tvnsBuffer.push(tvnsSample);
+      tvnsBuffer.shift();
+
+      // Draw Canvases
+      drawSignalLine(ctxMotion, motionBuffer, '#00D4FF', 0, 5.0);
+      drawSignalLine(ctxPPG, ppgBuffer, '#10B981', -0.2, 1.2);
+      drawSignalLine(ctxEDA, edaBuffer, '#F5D061', 0, 18.0);
+      drawSignalLine(ctxTVNS, tvnsBuffer, '#9D4EDD', -1.2, 1.2);
+
+      // Draw Tactical Radar Sweep
+      drawTacticalRadar();
+
+      requestAnimationFrame(renderWaveforms);
+    }
+
+    function drawSignalLine(ctx, buffer, color, minVal, maxVal) {
+      if (!ctx) return;
+      const w = ctx.canvas.width;
+      const h = ctx.canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.beginPath();
+      ctx.lineWidth = 2 * window.devicePixelRatio;
+      ctx.strokeStyle = color;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const step = w / (buffer.length - 1);
+      const valRange = maxVal - minVal || 1;
+
+      for (let i = 0; i < buffer.length; i++) {
+        const norm = (buffer[i] - minVal) / valRange;
+        const clampedNorm = Math.max(0, Math.min(1, norm));
+        const y = h - (clampedNorm * (h - 14) + 7);
+        const x = i * step;
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+
+      // Glowing tip at the leading edge
+      const lastNorm = (buffer[buffer.length - 1] - minVal) / valRange;
+      const lastY = h - (Math.max(0, Math.min(1, lastNorm)) * (h - 14) + 7);
+      ctx.beginPath();
+      ctx.arc(w - 2, lastY, 3.5 * window.devicePixelRatio, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+    }
+
+    function drawTacticalRadar() {
+      if (!ctxRadar) return;
+      const w = ctxRadar.canvas.width;
+      const h = ctxRadar.canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = Math.min(cx, cy) - 10;
+
+      ctxRadar.clearRect(0, 0, w, h);
+
+      // Concentric tactical rings
+      ctxRadar.strokeStyle = 'rgba(0, 212, 255, 0.15)';
+      ctxRadar.lineWidth = 1;
+      for (let r = radius / 3; r <= radius; r += radius / 3) {
+        ctxRadar.beginPath();
+        ctxRadar.arc(cx, cy, r, 0, Math.PI * 2);
+        ctxRadar.stroke();
+      }
+
+      // Crosshairs
+      ctxRadar.beginPath();
+      ctxRadar.moveTo(cx - radius, cy);
+      ctxRadar.lineTo(cx + radius, cy);
+      ctxRadar.moveTo(cx, cy - radius);
+      ctxRadar.lineTo(cx, cy + radius);
+      ctxRadar.stroke();
+
+      // Rotating Radar Sweep Beam
+      radarAngle += 0.035;
+      const grad = ctxRadar.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      grad.addColorStop(0, 'rgba(0, 212, 255, 0.25)');
+      grad.addColorStop(1, 'rgba(0, 212, 255, 0)');
+
+      ctxRadar.beginPath();
+      ctxRadar.moveTo(cx, cy);
+      ctxRadar.arc(cx, cy, radius, radarAngle - 0.45, radarAngle);
+      ctxRadar.closePath();
+      ctxRadar.fillStyle = grad;
+      ctxRadar.fill();
+
+      // Sweep Beam Edge
+      ctxRadar.beginPath();
+      ctxRadar.moveTo(cx, cy);
+      ctxRadar.lineTo(cx + Math.cos(radarAngle) * radius, cy + Math.sin(radarAngle) * radius);
+      ctxRadar.strokeStyle = 'rgba(0, 212, 255, 0.6)';
+      ctxRadar.lineWidth = 1.5;
+      ctxRadar.stroke();
+    }
+
+    /* =========================================================================
+       5. INTERACTIVE HARDWARE HOTSPOT VIEWER DATA & ACTIONS
+       ========================================================================= */
+    const hotspotData = {
+      1: {
+        badge: 'SUBSYSTEM 01 // ACTIVE INTERVENTION',
+        title: 'Auricular tVNS Earhook (Vagus Nerve Micro-Stimulation)',
+        desc: 'Clips comfortably over the ear with micro-electrode contacts resting directly in the cymba conchae of the external ear. Delivers non-invasive, 25Hz biphasic charge-balanced micro-stimulation to the Auricular Branch of the Vagus Nerve (ABVN), projecting afferent signals directly into the Nucleus Tractus Solitarius (NTS) to truncate cortical seizure synchronization.',
+        specs: [
+          ['Stimulation Waveform', 'Biphasic Symmetrical Square Wave'],
+          ['Frequency & Current', '25 Hz | 0.2 mA to 1.5 mA Adjustable'],
+          ['Pulse Duration', '250 µs Phase Width'],
+          ['Safety Isolation', 'IEC 60601-1 Type BF Defibrillator Proof']
+        ]
+      },
+      2: {
+        badge: 'SUBSYSTEM 02 // AUTONOMIC MONITORING',
+        title: 'Gold-Plated Dry Electrodes (Biocompatible EDA/GSR Tracking)',
+        desc: '24-Karat gold-plated dry fractal contact electrodes positioned along the cervical neck spine. Captures tonic and phasic electrodermal activity (EDA in micro-Siemens) to register sympathetic nervous system excitation 30 to 60 seconds prior to physical convulsion onset. Requires zero conductive gel, eliminating skin erythema and allergic contact dermatitis.',
+        specs: [
+          ['Contact Metallurgy', '24K Au over Beryllium-Copper substrate'],
+          ['Electrode Type', 'Gel-free dry micro-pin matrix (No chemical adhesive)'],
+          ['Sampling Rate', '250 Hz Continuous with 24-bit ADC'],
+          ['Skin Contact Impedance', 'Autocalibrated &lt; 15 kΩ (Conformal seal)']
+        ]
+      },
+      3: {
+        badge: 'SUBSYSTEM 03 // ARTERIAL HEMODYNAMICS',
+        title: 'Carotid PPG Pulse Sensor Hub (High-Accuracy Hemodynamics)',
+        desc: 'Dual-wavelength optical photoplethysmography sensor module mounted directly above the left and right common carotid triangles. Unlike wrist sensors that suffer severe motion artifacts during typing or clonic shaking, carotid placement measures arterial pulse transit time and beat-to-beat HRV (RMSSD) with 99.1% artifact rejection.',
+        specs: [
+          ['Optical Wavelengths', '525 nm (Green) + 940 nm (Infrared)'],
+          ['Analog Front-End', 'Texas Instruments AFE4404 Optical Hub'],
+          ['Metrics Extracted', 'Carotid Transit Time, SpO2, RMSSD, Tachycardia Index'],
+          ['Motion Tolerance', 'Active Ambient Cancellation up to 5g Accel']
+        ]
+      },
+      4: {
+        badge: 'SUBSYSTEM 04 // EMBEDDED COMPUTING & CELLULAR',
+        title: 'Edge TinyML MCU & Standalone GPS/LTE Module',
+        desc: 'Ultra-low-power dual-core Nordic nRF5340 / ESP32-S3 microcontroller running an 8-bit quantized Temporal Convolutional Network (TCN-LSTM). Infers multi-modal sensor fusion in 4.2 milliseconds onboard without sending raw private data to external servers. Coupled with a Quectel BG95 LTE-M/NB-IoT modem and GNSS engine for autonomous emergency dispatch.',
+        specs: [
+          ['Processor Architecture', 'Dual-core ARM Cortex-M33 / Xtensa 32-bit'],
+          ['TinyML Latency', '4.2 ms inference @ 250 Hz (Quantized INT8)'],
+          ['Cellular Uplink', 'Quectel BG95 LTE-M / NB-IoT (eSIM Integrated)'],
+          ['Battery Standby', '380 mAh Li-Po pouch (48 hours active continuous)']
+        ]
+      },
+      5: {
+        badge: 'SUBSYSTEM 05 // ERGONOMIC BIOMATERIALS',
+        title: 'Medical-Grade Liquid Silicone Flexible Neck Chassis',
+        desc: 'Platinum-cured liquid silicone rubber (LSR) overmolded onto a superelastic Nitinol shape-memory titanium core. Conforms naturally to any neck geometry (32cm to 48cm circumference) while weighing only 48 grams. Certified under ISO 10993-5 (Cytotoxicity) and ISO 10993-10 (Skin Sensitization) for unbroken 24/7 day and night wear.',
+        specs: [
+          ['Polymer Standard', 'ISO 10993-5 / 10 Platinum-Cured Medical LSR'],
+          ['Internal Skeleton', 'Superelastic Nitinol (Nickel-Titanium Memory Alloy)'],
+          ['Ingress Protection', 'IP68 (Dustproof, 1.5m Waterproof for 30 mins)'],
+          ['Total Weight', '48 grams (Featherlight ergonomic collar)']
+        ]
+      }
+    };
+
+    function selectHotspot(spotNum) {
+      State.activeHotspot = spotNum;
+      const data = hotspotData[spotNum];
+      if (!data) return;
+
+      // Update Spec Card
+      document.getElementById('specBadge').textContent = data.badge;
+      document.getElementById('specTitle').textContent = data.title;
+      document.getElementById('specDesc').textContent = data.desc;
+
+      const tbody = document.getElementById('specTableBody');
+      tbody.innerHTML = '';
+      data.specs.forEach(([label, val]) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class="label">${label}</td><td class="val">${val}</td>`;
+        tbody.appendChild(row);
+      });
+
+      // Update Pills UI
+      const pills = document.querySelectorAll('.hotspot-pill-item');
+      pills.forEach(p => {
+        const s = parseInt(p.getAttribute('data-spot'));
+        if (s === spotNum) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
+    }
+
+    // Schematic Mode Selector (Hotspots | X-Ray | Pathway)
+    const btnModeHotspots = document.getElementById('btnModeHotspots');
+    const btnModeXRay = document.getElementById('btnModeXRay');
+    const btnModePathway = document.getElementById('btnModePathway');
+
+    function setSchematicMode(mode) {
+      State.schematicMode = mode;
+      [btnModeHotspots, btnModeXRay, btnModePathway].forEach(b => b.classList.remove('active'));
+
+      const pins = document.querySelectorAll('.hotspot-pin');
+      const skeleton = document.getElementById('xraySkeleton');
+      const pathway = document.getElementById('vagusNervePathway');
+
+      if (mode === 'hotspots') {
+        btnModeHotspots.classList.add('active');
+        pins.forEach(p => p.style.display = 'block');
+        if (skeleton) skeleton.setAttribute('opacity', '0.4');
+        if (pathway) pathway.setAttribute('opacity', '0.3');
+      } else if (mode === 'xray') {
+        btnModeXRay.classList.add('active');
+        pins.forEach(p => p.style.display = 'none');
+        if (skeleton) skeleton.setAttribute('opacity', '0.9');
+        if (pathway) pathway.setAttribute('opacity', '0.1');
+      } else if (mode === 'pathway') {
+        btnModePathway.classList.add('active');
+        pins.forEach(p => p.style.display = 'none');
+        if (skeleton) skeleton.setAttribute('opacity', '0.2');
+        if (pathway) pathway.setAttribute('opacity', '1');
+      }
+    }
+
+    /* =========================================================================
+       6. WEB SERIAL API & VIRTUAL COM PORT TELEMETRY
+       ========================================================================= */
+    const terminalBody = document.getElementById('serialTerminalBody');
+
+    function appendSerialLog(tag, msg, type = 'rx') {
+      if (!terminalBody) return;
+      const row = document.createElement('div');
+      row.className = 'log-row';
+
+      const d = new Date();
+      const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}.${String(d.getMilliseconds()).padStart(3,'0')}`;
+
+      row.innerHTML = `
+        <span class="log-time">[${timeStr}]</span>
+        <span class="log-tag ${type}">[${tag}]</span>
+        <span class="log-msg">${msg}</span>
+      `;
+
+      terminalBody.appendChild(row);
+      terminalBody.scrollTop = terminalBody.scrollHeight;
+
+      // Keep terminal under 100 rows
+      if (terminalBody.children.length > 100) {
+        terminalBody.removeChild(terminalBody.firstChild);
+      }
+    }
+
+    // Connect Live Band (Web Serial API)
+    async function connectWebSerial() {
+      if (!('serial' in navigator)) {
+        appendSerialLog('WARN', 'Web Serial API is not supported in this browser. Falling back to ESP32 Virtual Port.', 'err');
+        toggleVirtualSerial(true);
+        return;
+      }
+
+      try {
+        appendSerialLog('SERIAL', 'Requesting USB Serial Port from OS...', 'rx');
+        const port = await navigator.serial.requestPort();
+        const baud = parseInt(document.getElementById('serialBaudRate').value) || 115200;
+        await port.open({ baudRate: baud });
+
+        State.serialPort = port;
+        State.serialKeepReading = true;
+
+        document.getElementById('topSerialText').textContent = 'ESP32 Band Connected';
+        document.getElementById('btnTopSerial').classList.add('connected');
+        document.getElementById('btnConnectSerialText').textContent = 'Disconnect Live Band';
+        document.getElementById('serialStatusBadge').textContent = `CONNECTED (${baud} 8-N-1)`;
+        document.getElementById('serialStatusBadge').className = 'pricing-badge emerald';
+
+        appendSerialLog('STATUS', `Connected to USB CDC-ACM port at ${baud} bps! Streaming JSON telemetry...`, 'ok');
+
+        readSerialStream(port);
+      } catch (err) {
+        appendSerialLog('ERR', `Serial connection failed: ${err.message}`, 'err');
+      }
+    }
+
+    async function disconnectWebSerial() {
+      State.serialKeepReading = false;
+      if (State.serialReader) {
+        try {
+          await State.serialReader.cancel();
+        } catch (e) {}
+      }
+      if (State.serialPort) {
+        try {
+          await State.serialPort.close();
+        } catch (e) {}
+        State.serialPort = null;
+      }
+
+      document.getElementById('topSerialText').textContent = 'Connect Live Band';
+      document.getElementById('btnTopSerial').classList.remove('connected');
+      document.getElementById('btnConnectSerialText').textContent = 'Connect USB Device';
+      document.getElementById('serialStatusBadge').textContent = 'DISCONNECTED';
+      document.getElementById('serialStatusBadge').className = 'pricing-badge';
+      appendSerialLog('STATUS', 'Serial port closed by user.', 'rx');
+    }
+
+    async function readSerialStream(port) {
+      const textDecoder = new TextDecoderStream();
+      const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+      const reader = textDecoder.readable.getReader();
+      State.serialReader = reader;
+
+      let lineBuffer = '';
+
+      try {
+        while (State.serialKeepReading) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (value) {
+            lineBuffer += value;
+            const lines = lineBuffer.split('\n');
+            lineBuffer = lines.pop(); // Keep partial line
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (trimmed) {
+                parseIncomingTelemetry(trimmed);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        appendSerialLog('ERR', `Stream reader error: ${err.message}`, 'err');
+      } finally {
+        reader.releaseLock();
+      }
+    }
+
+    function parseIncomingTelemetry(rawText) {
+      State.packetsRx++;
+      State.packetsInSec++;
+      document.getElementById('statPacketsRx').textContent = State.packetsRx;
+
+      appendSerialLog('RX', rawText, 'rx');
+
+      // Try to parse JSON telemetry
+      try {
+        const data = JSON.parse(rawText);
+        if (data.hr !== undefined) State.vitals.targetHr = data.hr;
+        if (data.g !== undefined) State.vitals.targetMotionG = data.g;
+        if (data.eda !== undefined) State.vitals.targetEda = data.eda;
+        if (data.tvns !== undefined) State.vitals.targetTvnsCurrent = data.tvns;
+        if (data.stage !== undefined) setStage(data.stage);
+      } catch (e) {
+        // Non-JSON raw text line
+      }
+    }
+
+    // Virtual Serial COM3 Simulator
+    function toggleVirtualSerial(forceState = null) {
+      const shouldEnable = forceState !== null ? forceState : !State.isVirtualSerial;
+      State.isVirtualSerial = shouldEnable;
+
+      const btn = document.getElementById('btnToggleVirtualSerial');
+      const text = document.getElementById('virtualSerialText');
+      const badge = document.getElementById('serialStatusBadge');
+
+      if (shouldEnable) {
+        text.textContent = 'Stop Virtual COM3';
+        btn.classList.add('connected');
+        badge.textContent = 'VIRTUAL COM3 (ESP32-S3 SIM)';
+        badge.className = 'pricing-badge purple';
+
+        document.getElementById('topSerialText').textContent = 'ESP32 Sim Stream';
+        document.getElementById('btnTopSerial').classList.add('connected');
+
+        appendSerialLog('SIM', 'ESP32 Virtual COM3 telemetry stream initialized at 115200 bps.', 'ok');
+
+        State.virtualSerialInterval = setInterval(() => {
+          // Generate simulated telemetry JSON packet reflecting active stage
+          const v = State.vitals;
+          const pkt = {
+            device: "SEIZE_ALERT_ESP32",
+            stage: State.stage,
+            hr: Math.round(v.hr + (Math.random() - 0.5) * 2),
+            g: parseFloat(v.motionG.toFixed(2)),
+            eda: parseFloat(v.eda.toFixed(1)),
+            tvns: parseFloat(v.tvnsCurrent.toFixed(1)),
+            batt: 94
+          };
+          parseIncomingTelemetry(JSON.stringify(pkt));
+        }, 600);
+      } else {
+        text.textContent = 'Simulate ESP32 (COM3)';
+        btn.classList.remove('connected');
+        badge.textContent = 'DISCONNECTED';
+        badge.className = 'pricing-badge';
+
+        document.getElementById('topSerialText').textContent = 'Connect Live Band';
+        document.getElementById('btnTopSerial').classList.remove('connected');
+
+        if (State.virtualSerialInterval) {
+          clearInterval(State.virtualSerialInterval);
+          State.virtualSerialInterval = null;
+        }
+        appendSerialLog('SIM', 'Virtual telemetry stream stopped.', 'rx');
+      }
+    }
+
+    // Packet Rate Counter Timer
+    setInterval(() => {
+      document.getElementById('statPacketRate').textContent = `${State.packetsInSec} Hz`;
+      State.packetsInSec = 0;
+    }, 1000);
+
+    /* =========================================================================
+       7. TAB NAVIGATION & EVENT ATTACHMENTS
+       ========================================================================= */
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Navigation Tabs
+      const navButtons = document.querySelectorAll('.nav-btn');
+      const tabSections = document.querySelectorAll('.tab-section');
+
+      navButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabId = btn.getAttribute('data-tab');
+          navButtons.forEach(b => b.classList.remove('active'));
+          tabSections.forEach(s => s.classList.remove('active'));
+
+          btn.classList.add('active');
+          const target = document.getElementById(tabId);
+          if (target) target.classList.add('active');
+          State.activeTab = tabId;
+
+          // Resize canvases if simulator tab is opened
+          if (tabId === 'tabSimulator') {
+            setTimeout(resizeCanvases, 50);
+          }
+        });
+      });
+
+      // 2. Stage Stepper & Controls
+      document.getElementById('btnStepNext').addEventListener('click', advanceNextStage);
+      document.getElementById('btnAutoDemo').addEventListener('click', toggleAutoPitchDemo);
+      document.getElementById('btnCancelOverride').addEventListener('click', cancelFalseAlarm);
+      document.getElementById('btnResetAll').addEventListener('click', () => {
+        stopAutoDemo();
+        setStage(1);
+      });
+
+      // Interactive Click on Stage Items
+      document.querySelectorAll('.stage-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const s = parseInt(item.getAttribute('data-stage'));
+          stopAutoDemo();
+          setStage(s);
+        });
+      });
+
+      // 3. Audio Synth Toggle
+      const btnAudio = document.getElementById('btnAudioToggle');
+      const audioText = document.getElementById('audioToggleText');
+      btnAudio.addEventListener('click', () => {
+        sound.init();
+        State.audioEnabled = !State.audioEnabled;
+        if (State.audioEnabled) {
+          btnAudio.classList.add('active');
+          audioText.textContent = 'tVNS Audio: ON';
+          sound.playTone(880, 'sine', 0.05, 0.05);
+        } else {
+          btnAudio.classList.remove('active');
+          audioText.textContent = 'tVNS Audio: MUTED';
+          sound.stopTvnsAudioPulse();
+        }
+      });
+
+      // 4. Web Serial Buttons
+      document.getElementById('btnTopSerial').addEventListener('click', () => {
+        if (State.serialPort) {
+          disconnectWebSerial();
+        } else if (State.isVirtualSerial) {
+          toggleVirtualSerial(false);
+        } else {
+          // Switch to serial tab and trigger connection
+          document.querySelector('[data-tab="tabSerial"]').click();
+          connectWebSerial();
+        }
+      });
+
+      document.getElementById('btnConnectSerial').addEventListener('click', () => {
+        if (State.serialPort) {
+          disconnectWebSerial();
+        } else {
+          connectWebSerial();
+        }
+      });
+
+      document.getElementById('btnToggleVirtualSerial').addEventListener('click', () => {
+        toggleVirtualSerial();
+      });
+
+      document.getElementById('btnClearSerial').addEventListener('click', () => {
+        terminalBody.innerHTML = '';
+        appendSerialLog('SERIAL', 'Terminal log cleared.', 'rx');
+      });
+
+      // 5. Schematic Mode Controls
+      btnModeHotspots.addEventListener('click', () => setSchematicMode('hotspots'));
+      btnModeXRay.addEventListener('click', () => setSchematicMode('xray'));
+      btnModePathway.addEventListener('click', () => setSchematicMode('pathway'));
+
+      // Seed initial Serial Log
+      appendSerialLog('BOOT', 'SEIZE ALERT Firmware v3.4.1 (ESP32-S3 / nRF5340 Dual-Core) initialized.', 'ok');
+      appendSerialLog('TINYML', 'Quantized TCN-LSTM pre-ictal classifier loaded (4.2ms inference latency).', 'ok');
+      appendSerialLog('SENSORS', 'Carotid PPG Hub calibrated. Dual 24K Gold dry electrodes locked at 11.2 kΩ.', 'ok');
+      appendSerialLog('tVNS', 'Auricular micro-stimulation circuit armed (25Hz biphasic square wave).', 'ok');
+
+      // Initialize
+      resizeCanvases();
+      selectHotspot(1);
+      setStage(1);
+
+      // Start 60 FPS oscilloscope loop
+      requestAnimationFrame(renderWaveforms);
+    });
+  </script>
+</body>
+</html>

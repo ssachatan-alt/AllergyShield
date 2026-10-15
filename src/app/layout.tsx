@@ -2,17 +2,18 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AllergyShield — Intelligent Allergy Detection & Ingredient Safety Scanner",
+  title: "SEIZE ALERT — Active Epilepsy Technology | Closed-Loop Cervical-Auricular Band",
   description:
-    "Clinical-grade patient allergy matrix, multi-year reaction progression tracker, physical lab report OCR parser, and real-time camera-based ingredient safety scanner.",
+    "High-impact medical-grade showcase and pitch application for SEIZE ALERT: Active Epilepsy Technology. Closed-loop cervical-auricular non-watch band with tVNS vagus nerve micro-stimulation, biocompatible dry gold electrodes, and standalone GPS/LTE dispatch.",
   keywords: [
-    "allergy detection",
-    "ingredient scanner",
-    "food allergy safety",
-    "ImmunoCAP OCR",
-    "anaphylaxis tracker",
-    "cross-reactivity",
-    "clinical health records"
+    "SEIZE ALERT",
+    "Epilepsy Technology",
+    "tVNS Vagus Nerve Stimulation",
+    "Closed-Loop Seizure Intervention",
+    "Cervical Auricular Band",
+    "ISO 10993 Biocompatible",
+    "TinyML Edge Seizure Detection",
+    "Medical Device India"
   ],
 };
 
@@ -22,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-full flex flex-col bg-[#F8FAFC] dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors">
+    <html lang="en" className="h-full overflow-hidden select-none">
+      <body className="h-full w-full overflow-hidden m-0 p-0 bg-[#080d1a] text-slate-100 antialiased font-sans">
         {children}
       </body>
     </html>

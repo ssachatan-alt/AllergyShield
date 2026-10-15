@@ -1,0 +1,2978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroGuard AI — Closed-Loop Pre-Ictal Seizure Detection & Autonomous Intervention System</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================================
+       CSS VARIABLES & THEME TOKENS
+       ========================================================================= */
+    :root {
+      --bg-deep: #090D16;
+      --bg-panel: rgba(13, 20, 36, 0.78);
+      --bg-panel-subtle: rgba(17, 27, 49, 0.6);
+      --bg-panel-hover: rgba(23, 37, 66, 0.85);
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-cyan: rgba(0, 240, 255, 0.3);
+      --border-green: rgba(16, 185, 129, 0.3);
+      --border-amber: rgba(245, 158, 11, 0.35);
+      --border-crimson: rgba(239, 68, 68, 0.45);
+
+      --neon-cyan: #00F0FF;
+      --neon-emerald: #10B981;
+      --neon-amber: #F59E0B;
+      --neon-crimson: #EF4444;
+      --neon-indigo: #6366F1;
+      --neon-electric: #38BDF8;
+
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --text-dim: #475569;
+
+      --glow-cyan: 0 0 20px rgba(0, 240, 255, 0.35);
+      --glow-emerald: 0 0 20px rgba(16, 185, 129, 0.35);
+      --glow-amber: 0 0 22px rgba(245, 158, 11, 0.4);
+      --glow-crimson: 0 0 25px rgba(239, 68, 68, 0.5);
+
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.07) 0%, transparent 60%),
+        radial-gradient(circle at 10% 90%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      transition: box-shadow 0.5s ease;
+    }
+
+    /* Screen Border Alert State */
+    body.seizure-alert-active {
+      box-shadow: inset 0 0 60px rgba(239, 68, 68, 0.55), inset 0 0 120px rgba(239, 68, 68, 0.25);
+      animation: alertVignettePulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes alertVignettePulse {
+      0%, 100% { box-shadow: inset 0 0 45px rgba(239, 68, 68, 0.45); }
+      50% { box-shadow: inset 0 0 85px rgba(239, 68, 68, 0.7), inset 0 0 160px rgba(239, 68, 68, 0.35); }
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--neon-cyan);
+    }
+
+    /* Glassmorphism Panel Base */
+    .glass-panel {
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+      pointer-events: none;
+    }
+
+    /* =========================================================================
+       1. TOP CLINICAL HEADER BAR
+       ========================================================================= */
+    header.clinical-header {
+      height: 64px;
+      min-height: 64px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(9, 13, 22, 0.94);
+      backdrop-filter: blur(20px);
+      z-index: 50;
+      gap: 14px;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 290px;
+    }
+
+    .brand-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(99, 102, 241, 0.2));
+      border: 1px solid var(--border-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--glow-cyan);
+      position: relative;
+    }
+    .brand-icon-box svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: var(--neon-cyan);
+      stroke-width: 2;
+    }
+
+    .brand-text h1 {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(90deg, #FFFFFF, #E2E8F0, var(--neon-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-text p {
+      font-size: 10.5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+
+    .pulse-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      font-family: var(--font-mono);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: var(--neon-emerald);
+      text-transform: uppercase;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--neon-emerald);
+      box-shadow: 0 0 8px var(--neon-emerald);
+      animation: pulseGreen 1.5s infinite;
+    }
+    @keyframes pulseGreen {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    /* Center Patient Chip & Privacy Badge */
+    .header-center-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      justify-content: center;
+      max-width: 780px;
+    }
+
+    .patient-chip {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+    }
+    .patient-metric {
+      display: flex;
+      flex-direction: column;
+    }
+    .patient-metric .label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+    .patient-metric .val {
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: #E2E8F0;
+    }
+    .patient-metric .val.highlight {
+      color: var(--neon-cyan);
+    }
+    .patient-divider {
+      width: 1px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .privacy-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 11px;
+      border-radius: 8px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      font-size: 10.5px;
+      color: #C7D2FE;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+    }
+    .privacy-badge svg {
+      width: 14px;
+      height: 14px;
+      color: #818CF8;
+    }
+
+    /* Header Controls (Judge Demo) */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 440px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 7px 13px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: var(--font-ui);
+      outline: none;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    /* Sound Toggle Button */
+    .btn-sound {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 7px 10px;
+    }
+    .btn-sound:hover {
+      color: var(--neon-cyan);
+      border-color: var(--border-cyan);
+    }
+    .btn-sound.active {
+      color: var(--neon-cyan);
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--border-cyan);
+    }
+
+    /* Primary Seizure Trigger */
+    .btn-trigger {
+      background: linear-gradient(135deg, #DC2626, #B91C1C);
+      color: #FFFFFF;
+      border: 1px solid #EF4444;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.45);
+      animation: pulseTriggerBtn 2.2s infinite;
+    }
+    .btn-trigger:hover {
+      background: linear-gradient(135deg, #EF4444, #DC2626);
+      box-shadow: 0 0 24px rgba(239, 68, 68, 0.7);
+      transform: translateY(-1px);
+    }
+    @keyframes pulseTriggerBtn {
+      0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 22px rgba(239, 68, 68, 0.75); }
+    }
+
+    /* False Alarm Override Button */
+    .btn-override {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #FCD34D;
+      opacity: 0.55;
+      pointer-events: none;
+    }
+    .btn-override.active {
+      opacity: 1;
+      pointer-events: auto;
+      background: linear-gradient(135deg, #D97706, #B45309);
+      color: #FFFFFF;
+      border-color: #F59E0B;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.65);
+      animation: overridePulse 0.9s infinite alternate;
+    }
+    @keyframes overridePulse {
+      from { transform: scale(1); box-shadow: 0 0 14px rgba(245, 158, 11, 0.4); }
+      to { transform: scale(1.03); box-shadow: 0 0 26px rgba(245, 158, 11, 0.85); }
+    }
+
+    /* Reset Button */
+    .btn-reset {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+    .btn-reset:hover {
+      color: #FFFFFF;
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* =========================================================================
+       MAIN GRID DASHBOARD LAYOUT (3 COLUMNS, 100VH COMPACT FIT)
+       ========================================================================= */
+    main.dashboard-grid {
+      flex: 1;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: 1.15fr 1.35fr 1.05fr;
+      gap: 12px;
+      overflow: hidden;
+      height: calc(100vh - 64px - 28px);
+    }
+
+    /* Section Headers */
+    .panel-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 16, 30, 0.6);
+    }
+    .panel-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #E2E8F0;
+    }
+    .panel-title svg {
+      width: 15px;
+      height: 15px;
+      color: var(--neon-cyan);
+    }
+    .panel-subtitle {
+      font-size: 9.5px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    /* =========================================================================
+       LEFT COLUMN: REAL-TIME MULTI-MODAL BIOSENSOR WAVEFORMS
+       ========================================================================= */
+    .col-biosensors {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 100%;
+    }
+
+    .wave-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .wave-header {
+      padding: 6px 12px;
+      background: rgba(10, 16, 30, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .wave-title-group {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .wave-tag {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+    .wave-tag.eeg {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--neon-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .wave-tag.ppg {
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--neon-cyan);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+    .wave-tag.gsr {
+      background: rgba(99, 102, 241, 0.15);
+      color: #A5B4FC;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .wave-title-text {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #CBD5E1;
+    }
+    .wave-lead-status {
+      font-size: 9.5px;
+      font-family: var(--font-mono);
+      color: var(--neon-emerald);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .wave-body {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      background: rgba(4, 7, 14, 0.7);
+      overflow: hidden;
+    }
+    .canvas-container canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Oscilloscope Grid Background */
+    .canvas-grid-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* Waveform HUD Sidebar */
+    .wave-hud-sidebar {
+      width: 120px;
+      background: rgba(8, 13, 24, 0.9);
+      border-left: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+    .hud-stat {
+      display: flex;
+      flex-direction: column;
+    }
+    .hud-label {
+      font-size: 8.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .hud-value {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: #E2E8F0;
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+    }
+    .hud-value .unit {
+      font-size: 8.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .hud-value.alert {
+      color: var(--neon-crimson);
+      text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    }
+    .hud-value.warning {
+      color: var(--neon-amber);
+    }
+    .hud-value.normal {
+      color: var(--neon-emerald);
+    }
+
+    /* =========================================================================
+       CENTER COLUMN: WEARABLE PATCH SCHEMATIC & CLOSED-LOOP PIPELINE
+       ========================================================================= */
+    .col-center {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
+
+    .patch-visualizer-card {
+      flex: 1.15;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .patch-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 8px 14px;
+      background: radial-gradient(circle at center, rgba(14, 25, 48, 0.5) 0%, rgba(5, 9, 18, 0.85) 100%);
+    }
+
+    /* SVG Schematic Styling */
+    .patch-svg {
+      width: 100%;
+      height: 100%;
+      max-height: 275px;
+      filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.6));
+    }
+
+    /* Interactive Subsystem Glows */
+    .sensor-ring {
+      transition: all 0.4s ease;
+      stroke: var(--neon-emerald);
+      filter: drop-shadow(0 0 6px var(--neon-emerald));
+    }
+    .sensor-ring.alert {
+      stroke: var(--neon-crimson);
+      filter: drop-shadow(0 0 10px var(--neon-crimson));
+      animation: sensorRingPulse 0.8s infinite alternate;
+    }
+    @keyframes sensorRingPulse {
+      from { stroke-width: 2; opacity: 0.8; }
+      to { stroke-width: 3.5; opacity: 1; filter: drop-shadow(0 0 14px var(--neon-crimson)); }
+    }
+
+    /* Electric Vagus Lightning Arcs */
+    .tvns-arc {
+      stroke: var(--neon-cyan);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      fill: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      filter: drop-shadow(0 0 8px var(--neon-cyan));
+    }
+    .tvns-arc.firing {
+      opacity: 1;
+      animation: tvnsDischarge 0.12s infinite alternate;
+    }
+    @keyframes tvnsDischarge {
+      0% { stroke: #00F0FF; stroke-width: 2.5; filter: drop-shadow(0 0 10px #00F0FF); }
+      50% { stroke: #38BDF8; stroke-width: 1.8; filter: drop-shadow(0 0 5px #38BDF8); }
+      100% { stroke: #FFFFFF; stroke-width: 3.2; filter: drop-shadow(0 0 14px #00F0FF); }
+    }
+
+    /* Microneedle Drug Reservoir Level */
+    .drug-fluid-level {
+      transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), y 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Patch Badges / Overlays */
+    .patch-callouts {
+      position: absolute;
+      bottom: 8px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .patch-badge {
+      background: rgba(9, 13, 22, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 9.5px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+    }
+    .patch-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    /* Drug Chamber Mini Gauge in Header */
+    .drug-gauge-compact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+    }
+    .gauge-track {
+      width: 65px;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .gauge-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #F59E0B, #10B981);
+      transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+    .gauge-fill.depleting {
+      background: linear-gradient(90deg, #EF4444, #F59E0B);
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+    }
+
+    /* CLOSED-LOOP STEPPER PIPELINE */
+    .pipeline-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pipeline-steps {
+      flex: 1;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      background: rgba(14, 21, 38, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .step-item.active {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.18);
+    }
+    .step-item.active.alarm {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: var(--neon-crimson);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.28);
+    }
+    .step-item.active.warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: var(--neon-amber);
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.25);
+    }
+    .step-item.completed {
+      border-color: rgba(16, 185, 129, 0.3);
+      opacity: 0.85;
+    }
+
+    .step-index-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-item.active .step-index-badge {
+      background: var(--neon-cyan);
+      color: #090D16;
+      box-shadow: 0 0 10px var(--neon-cyan);
+    }
+    .step-item.active.alarm .step-index-badge {
+      background: var(--neon-crimson);
+      color: #FFFFFF;
+      box-shadow: 0 0 10px var(--neon-crimson);
+    }
+    .step-item.active.warning .step-index-badge {
+      background: var(--neon-amber);
+      color: #090D16;
+      box-shadow: 0 0 10px var(--neon-amber);
+    }
+    .step-item.completed .step-index-badge {
+      background: var(--neon-emerald);
+      color: #090D16;
+    }
+
+    .step-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .step-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+    .step-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #F1F5F9;
+      letter-spacing: 0.3px;
+    }
+    .step-state-tag {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text-muted);
+    }
+    .step-item.active .step-state-tag {
+      background: rgba(0, 240, 255, 0.2);
+      color: var(--neon-cyan);
+    }
+    .step-item.active.alarm .step-state-tag {
+      background: rgba(239, 68, 68, 0.25);
+      color: var(--neon-crimson);
+    }
+    .step-item.active.warning .step-state-tag {
+      background: rgba(245, 158, 11, 0.25);
+      color: var(--neon-amber);
+    }
+    .step-item.completed .step-state-tag {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--neon-emerald);
+    }
+
+    .step-desc {
+      font-size: 9.8px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    /* Live Countdown Progress Bar in Stage 1 */
+    .countdown-bar-wrapper {
+      margin-top: 5px;
+      height: 5px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 3px;
+      overflow: hidden;
+      display: none;
+    }
+    .countdown-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #F59E0B, #EF4444);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+      transition: width 0.1s linear;
+    }
+
+    /* =========================================================================
+       RIGHT COLUMN: GPS RADAR, SOS DISPATCH & CLINICAL AUDIT TERMINAL
+       ========================================================================= */
+    .col-right {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
+
+    /* GPS Radar Card */
+    .gps-card {
+      flex: 0.95;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .gps-display {
+      flex: 1;
+      position: relative;
+      background: #060A13;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Radar Canvas & HUD */
+    .radar-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .radar-info-overlay {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .gps-fix-chip {
+      background: rgba(9, 13, 22, 0.85);
+      border: 1px solid var(--border-cyan);
+      padding: 3px 7px;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--neon-cyan);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .radar-target-pin {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      top: 50%;
+      left: 50%;
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+    }
+    .target-dot {
+      width: 12px;
+      height: 12px;
+      background: var(--neon-cyan);
+      border: 2px solid #FFFFFF;
+      border-radius: 50%;
+      box-shadow: 0 0 16px var(--neon-cyan);
+      position: relative;
+    }
+    .target-ripple {
+      position: absolute;
+      inset: -14px;
+      border: 1.5px solid var(--neon-cyan);
+      border-radius: 50%;
+      animation: radarRipple 2s infinite ease-out;
+    }
+    @keyframes radarRipple {
+      0% { transform: scale(0.4); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    .radar-target-pin.seizure-active .target-dot {
+      background: var(--neon-crimson);
+      box-shadow: 0 0 20px var(--neon-crimson);
+    }
+    .radar-target-pin.seizure-active .target-ripple {
+      border-color: var(--neon-crimson);
+    }
+
+    .target-tooltip {
+      margin-top: 6px;
+      background: rgba(6, 11, 22, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+    .target-tooltip .campus-name {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+    .target-tooltip .geo-coord {
+      font-size: 8.5px;
+      font-family: var(--font-mono);
+      color: var(--neon-cyan);
+    }
+
+    /* Caregiver Smartphone Dispatch Card */
+    .sos-dispatch-card {
+      flex: 0.9;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(145deg, rgba(23, 27, 44, 0.85), rgba(13, 17, 30, 0.95));
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+    .sos-dispatch-card.active-sos {
+      border-color: var(--neon-crimson);
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
+    }
+
+    .sos-header {
+      padding: 8px 12px;
+      background: rgba(8, 12, 22, 0.6);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sos-badge-pill {
+      font-size: 8.5px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      font-family: var(--font-mono);
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(100, 116, 139, 0.2);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .sos-dispatch-card.active-sos .sos-badge-pill {
+      background: rgba(239, 68, 68, 0.2);
+      color: #FCA5A5;
+      border-color: rgba(239, 68, 68, 0.4);
+      animation: alertTextPulse 1.2s infinite;
+    }
+    @keyframes alertTextPulse {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; text-shadow: 0 0 8px rgba(239, 68, 68, 0.7); }
+    }
+
+    .sos-body {
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 10px;
+    }
+
+    .phone-notification-bubble {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      gap: 9px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .phone-icon-alert {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--neon-crimson);
+    }
+    .phone-text-group {
+      flex: 1;
+    }
+    .phone-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      justify-content: space-between;
+    }
+    .phone-title .time {
+      font-size: 8.5px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .phone-msg {
+      margin-top: 2px;
+      font-size: 9.5px;
+      color: #CBD5E1;
+      line-height: 1.35;
+    }
+    .phone-msg strong {
+      color: #F87171;
+    }
+
+    .sos-actions-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .btn-sos-action {
+      flex: 1;
+      padding: 5px 6px;
+      font-size: 9px;
+      font-weight: 700;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.7);
+      color: #E2E8F0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-sos-action:hover {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .btn-sos-action.primary {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #FECACA;
+    }
+    .btn-sos-action.primary:hover {
+      background: rgba(239, 68, 68, 0.35);
+    }
+
+    /* Clinical Terminal Card */
+    .terminal-card {
+      flex: 1.15;
+      display: flex;
+      flex-direction: column;
+      background: #050811;
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      overflow: hidden;
+      font-family: var(--font-mono);
+    }
+
+    .terminal-header {
+      padding: 6px 10px;
+      background: rgba(11, 17, 30, 0.85);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+    }
+    .terminal-dots {
+      display: flex;
+      gap: 5px;
+    }
+    .t-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+    .t-dot.r { background: #EF4444; }
+    .t-dot.y { background: #F59E0B; }
+    .t-dot.g { background: #10B981; }
+
+    .terminal-controls {
+      display: flex;
+      gap: 6px;
+    }
+    .terminal-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 9.5px;
+      font-family: var(--font-mono);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    .terminal-btn:hover {
+      color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .terminal-output {
+      flex: 1;
+      padding: 8px 10px;
+      overflow-y: auto;
+      font-size: 9.5px;
+      line-height: 1.5;
+      color: #A0AEC0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      background: rgba(3, 6, 12, 0.95);
+    }
+
+    .log-line {
+      display: flex;
+      gap: 6px;
+      word-break: break-all;
+    }
+    .log-time {
+      color: #4A5568;
+      flex-shrink: 0;
+    }
+    .log-tag {
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .log-tag.info { color: var(--neon-cyan); }
+    .log-tag.tinyml { color: #818CF8; }
+    .log-tag.warn { color: var(--neon-amber); }
+    .log-tag.critical { color: var(--neon-crimson); font-weight: 800; }
+    .log-tag.success { color: var(--neon-emerald); }
+    .log-text {
+      color: #E2E8F0;
+    }
+
+    /* =========================================================================
+       FOOTER STATUS BAR
+       ========================================================================= */
+    footer.status-bar {
+      height: 28px;
+      min-height: 28px;
+      background: #070B14;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 9.5px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .footer-left {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .footer-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-stat .val {
+      color: #CBD5E1;
+      font-weight: 600;
+    }
+    .footer-right {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .clinical-pill {
+      color: var(--neon-cyan);
+      background: rgba(0, 240, 255, 0.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    /* Modal / Tooltip Spec Overlays */
+    .patch-tooltip-popup {
+      position: absolute;
+      background: rgba(10, 16, 30, 0.95);
+      border: 1px solid var(--border-cyan);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), var(--glow-cyan);
+      padding: 8px 12px;
+      border-radius: 7px;
+      pointer-events: none;
+      z-index: 99;
+      display: none;
+      font-size: 10px;
+      max-width: 210px;
+      backdrop-filter: blur(12px);
+    }
+    .patch-tooltip-popup h4 {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      margin-bottom: 2px;
+    }
+    .patch-tooltip-popup p {
+      font-size: 9px;
+      color: #CBD5E1;
+      line-height: 1.35;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================================================================
+       1. TOP CLINICAL HEADER BAR
+       ========================================================================= -->
+  <header class="clinical-header">
+    <div class="brand-section">
+      <div class="brand-icon-box">
+        <!-- Biometric Shield & Neural Brainwave SVG -->
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="currentColor"/>
+          <path d="M8 12h1.5l1.5-3 2 6 1.5-3H16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>NeuroGuard™ <span style="font-size: 11px; font-weight: 500; color: var(--neon-cyan); -webkit-text-fill-color: var(--neon-cyan);">Edge-AI Biometric Patch</span></h1>
+        <p>Closed-Loop Pre-Ictal Seizure Detection & Autonomous Intervention</p>
+      </div>
+      <div class="pulse-badge">
+        <span class="pulse-dot"></span>
+        <span>LIVE TELEMETRY</span>
+      </div>
+    </div>
+
+    <!-- Patient Chip & Edge-AI Privacy Badge -->
+    <div class="header-center-info">
+      <div class="patient-chip">
+        <div class="patient-metric">
+          <span class="label">Patient ID</span>
+          <span class="val highlight">NG-SRM-042</span>
+        </div>
+        <div class="patient-divider"></div>
+        <div class="patient-metric">
+          <span class="label">Age / Sex</span>
+          <span class="val">21 Y / M</span>
+        </div>
+        <div class="patient-divider"></div>
+        <div class="patient-metric">
+          <span class="label">Clinical Diagnosis</span>
+          <span class="val" style="color: #F87171;">Refractory Tonic-Clonic Epilepsy</span>
+        </div>
+        <div class="patient-divider"></div>
+        <div class="patient-metric">
+          <span class="label">Patch Hydrogel</span>
+          <span class="val" style="color: var(--neon-emerald);">USP Class VI Active</span>
+        </div>
+      </div>
+
+      <div class="privacy-badge">
+        <!-- Shield Lock Icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>On-Device TinyML (nRF52840) — 100% Local Zero-Cloud Privacy</span>
+      </div>
+    </div>
+
+    <!-- Judge Demo Interactive Controls -->
+    <div class="header-actions">
+      <!-- Sound Mute/Unmute Toggle -->
+      <button id="btnSoundToggle" class="btn btn-sound active" title="Toggle Clinical Audio Beeps">
+        <svg id="soundIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+        <span id="soundLabel">AUDIO: ON</span>
+      </button>
+
+      <!-- SIMULATE SEIZURE TRIGGER -->
+      <button id="btnTriggerSeizure" class="btn btn-trigger">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span>SIMULATE PRE-ICTAL TRIGGER</span>
+      </button>
+
+      <!-- FALSE ALARM OVERRIDE -->
+      <button id="btnOverride" class="btn btn-override" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+        <span id="overrideLabel">FALSE ALARM OVERRIDE</span>
+      </button>
+
+      <!-- RESET BASELINE -->
+      <button id="btnReset" class="btn btn-reset">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+        <span>RESET</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MAIN GRID DASHBOARD
+       ========================================================================= */
+  <main class="dashboard-grid">
+
+    <!-- -----------------------------------------------------------------------
+         LEFT COLUMN: REAL-TIME MULTI-MODAL BIOSENSOR WAVEFORMS (CANVAS)
+         ----------------------------------------------------------------------- -->
+    <section class="col-biosensors">
+      
+      <!-- Waveform 1: Dry-Electrode sEMG / Pre-Ictal EEG -->
+      <div class="wave-card">
+        <div class="wave-header">
+          <div class="wave-title-group">
+            <span class="wave-tag eeg">EEG / sEMG</span>
+            <span class="wave-title-text">Cervical Ag/AgCl Dry-Electrode Frequency</span>
+          </div>
+          <div class="wave-lead-status">
+            <span style="display:inline-block; width:5px; height:5px; border-radius:50%; background:currentColor;"></span>
+            <span id="eegLeadStatus">IMPEDANCE 12.4 kΩ (LOCK)</span>
+          </div>
+        </div>
+        <div class="wave-body">
+          <div class="canvas-container">
+            <div class="canvas-grid-overlay"></div>
+            <canvas id="canvasEEG"></canvas>
+          </div>
+          <div class="wave-hud-sidebar">
+            <div class="hud-stat">
+              <span class="hud-label">Frequency</span>
+              <div class="hud-value normal" id="valEEGFreq">10.4 <span class="unit">Hz</span></div>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">Amplitude</span>
+              <div class="hud-value normal" id="valEEGAmp">22 <span class="unit">μV</span></div>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">Spectral Band</span>
+              <div class="hud-value" id="valEEGBand" style="font-size: 10px; color: #94A3B8;">Alpha (8-12Hz)</div>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">PLV Phase-Lock</span>
+              <div class="hud-value normal" id="valEEGPLV">0.18 <span class="unit">Idx</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Waveform 2: Photoplethysmography (PPG) & HRV -->
+      <div class="wave-card">
+        <div class="wave-header">
+          <div class="wave-title-group">
+            <span class="wave-tag ppg">PPG / HRV</span>
+            <span class="wave-title-text">Arterial Pulse Photoplethysmogram & Autonomic Tone</span>
+          </div>
+          <div class="wave-lead-status" style="color: var(--neon-cyan);">
+            <span style="display:inline-block; width:5px; height:5px; border-radius:50%; background:currentColor;"></span>
+            <span id="ppgLeadStatus">SpO2 99% (PERFUSED)</span>
+          </div>
+        </div>
+        <div class="wave-body">
+          <div class="canvas-container">
+            <div class="canvas-grid-overlay"></div>
+            <canvas id="canvasPPG"></canvas>
+          </div>
+          <div class="wave-hud-sidebar">
+            <div class="hud-stat">
+              <span class="hud-label">Heart Rate</span>
+              <div class="hud-value normal" id="valPPGBpm">74 <span class="unit">BPM</span></div>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">HRV (RMSSD)</span>
+              <div class="hud-value normal" id="valPPGHRV">62 <span class="unit">ms</span></div>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">Perfusion Index</span>
+              <div class="hud-value" id="valPPGPI" style="font-size: 11px; color: #38BDF8;">4.8 <span class="unit">%</span></div>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">Rhythm Status</span>
+              <div class="hud-value normal" id="valPPGStatus" style="font-size: 9.5px;">Normal Sinus</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Waveform 3: Galvanic Skin Response (GSR) & 6-Axis IMU -->
+      <div class="wave-card">
+        <div class="wave-header">
+          <div class="wave-title-group">
+            <span class="wave-tag gsr">GSR / IMU</span>
+            <span class="wave-title-text">Electrodermal Sweating & 6-Axis Accelerometer</span>
+          </div>
+          <div class="wave-lead-status" style="color: #A5B4FC;">
+            <span style="display:inline-block; width:5px; height:5px; border-radius:50%; background:currentColor;"></span>
+            <span id="imuStatus">RESTING (0.02g)</span>
+          </div>
+        </div>
+        <div class="wave-body">
+          <div class="canvas-container">
+            <div class="canvas-grid-overlay"></div>
+            <canvas id="canvasGSR"></canvas>
+          </div>
+          <div class="wave-hud-sidebar">
+            <div class="hud-stat">
+              <span class="hud-label">Skin Conductance</span>
+              <div class="hud-value normal" id="valGSREda">2.14 <span class="unit">μS</span></div>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">IMU Motion Vector</span>
+              <div class="hud-value normal" id="valIMUMotion">0.02 <span class="unit">g</span></div>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">Tremor Power</span>
+              <div class="hud-value" id="valTremorFreq" style="font-size: 10px; color: #94A3B8;">0.1 Hz (None)</div>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">Sympathetic Tone</span>
+              <div class="hud-value normal" id="valAutonomic" style="font-size: 9.5px;">Basal Resting</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- -----------------------------------------------------------------------
+         CENTER COLUMN: WEARABLE PATCH SCHEMATIC & CLOSED-LOOP INTERVENTION ENGINE
+         ----------------------------------------------------------------------- -->
+    <section class="col-center">
+
+      <!-- Interactive 2D SVG Hardware Patch Schematic -->
+      <div class="glass-panel patch-visualizer-card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+            <span>NeuroGuard™ Bio-Patch Schematic (Hardware Twin)</span>
+          </div>
+          <div class="drug-gauge-compact">
+            <span style="color: var(--text-muted); font-size: 9px;">MIDAZOLAM RESERVOIR:</span>
+            <div class="gauge-track">
+              <div id="drugGaugeFill" class="gauge-fill"></div>
+            </div>
+            <span id="drugGaugeText" style="color: #F8FAFC; font-weight: 700;">100% (5mg)</span>
+          </div>
+        </div>
+
+        <div class="patch-container" id="patchContainer">
+          
+          <!-- Detailed Medical-Grade 2D SVG Patch Illustration -->
+          <svg class="patch-svg" viewBox="0 0 540 310" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- Glowing Filters -->
+              <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <filter id="glowAmber" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4.5" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <filter id="glowRed" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="5.5" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+
+              <!-- Radial & Linear Gradients for Hardware -->
+              <linearGradient id="patchBaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#141E33"/>
+                <stop offset="50%" stop-color="#0E1626"/>
+                <stop offset="100%" stop-color="#080D18"/>
+              </linearGradient>
+
+              <linearGradient id="hydrogelGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(0, 240, 255, 0.12)"/>
+                <stop offset="50%" stop-color="rgba(16, 185, 129, 0.08)"/>
+                <stop offset="100%" stop-color="rgba(0, 240, 255, 0.12)"/>
+              </linearGradient>
+
+              <linearGradient id="goldPadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FCD34D"/>
+                <stop offset="100%" stop-color="#B45309"/>
+              </linearGradient>
+
+              <linearGradient id="drugLiquidGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#FBBF24"/>
+                <stop offset="100%" stop-color="#D97706"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Outer Anatomical Hydrogel Wing Membrane -->
+            <path d="M 90 155 C 90 90, 160 55, 270 55 C 380 55, 450 90, 450 155 C 450 220, 380 255, 270 255 C 160 255, 90 220, 90 155 Z" 
+                  fill="url(#hydrogelGrad)" stroke="rgba(0, 240, 255, 0.3)" stroke-width="1.5" stroke-dasharray="4,4"/>
+            
+            <!-- Biocompatible Medical Silicone Enclosure -->
+            <path id="patchBase" d="M 120 155 C 120 105, 180 75, 270 75 C 360 75, 420 105, 420 155 C 420 205, 360 235, 270 235 C 180 235, 120 205, 120 155 Z" 
+                  fill="url(#patchBaseGrad)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.8"/>
+
+            <!-- Printed Circuit Antenna Traces (Sub-surface) -->
+            <path d="M 170 120 Q 270 95 370 120" fill="none" stroke="rgba(0, 240, 255, 0.18)" stroke-width="1" stroke-dasharray="3,3"/>
+            <path d="M 170 190 Q 270 215 370 190" fill="none" stroke="rgba(0, 240, 255, 0.18)" stroke-width="1" stroke-dasharray="3,3"/>
+
+            <!-- 1. Dry Ag/AgCl Sensor Array Ring (6 Nodes around perimeter) -->
+            <g id="sensorArrayGroup">
+              <!-- Sensor 1 (Top Left) -->
+              <circle class="sensor-node" cx="175" cy="115" r="9" fill="#0F172A" stroke="var(--neon-emerald)" stroke-width="2"/>
+              <circle cx="175" cy="115" r="4" fill="var(--neon-emerald)" opacity="0.8"/>
+              <!-- Sensor 2 (Top Mid) -->
+              <circle class="sensor-node" cx="270" cy="98" r="9" fill="#0F172A" stroke="var(--neon-emerald)" stroke-width="2"/>
+              <circle cx="270" cy="98" r="4" fill="var(--neon-emerald)" opacity="0.8"/>
+              <!-- Sensor 3 (Top Right) -->
+              <circle class="sensor-node" cx="365" cy="115" r="9" fill="#0F172A" stroke="var(--neon-emerald)" stroke-width="2"/>
+              <circle cx="365" cy="115" r="4" fill="var(--neon-emerald)" opacity="0.8"/>
+              <!-- Sensor 4 (Bottom Right) -->
+              <circle class="sensor-node" cx="365" cy="195" r="9" fill="#0F172A" stroke="var(--neon-emerald)" stroke-width="2"/>
+              <circle cx="365" cy="195" r="4" fill="var(--neon-emerald)" opacity="0.8"/>
+              <!-- Sensor 5 (Bottom Mid) -->
+              <circle class="sensor-node" cx="270" cy="212" r="9" fill="#0F172A" stroke="var(--neon-emerald)" stroke-width="2"/>
+              <circle cx="270" cy="212" r="4" fill="var(--neon-emerald)" opacity="0.8"/>
+              <!-- Sensor 6 (Bottom Left) -->
+              <circle class="sensor-node" cx="175" cy="195" r="9" fill="#0F172A" stroke="var(--neon-emerald)" stroke-width="2"/>
+              <circle cx="175" cy="195" r="4" fill="var(--neon-emerald)" opacity="0.8"/>
+
+              <!-- Interconnecting Sensor Ring Pathway -->
+              <path id="sensorRingPath" class="sensor-ring" d="M 175 115 L 270 98 L 365 115 L 365 195 L 270 212 L 175 195 Z" 
+                    fill="none" stroke-width="1.8"/>
+            </g>
+
+            <!-- 2. Dual tVNS Electrodes (Left Cervical Vagus Stimulation Pads) -->
+            <!-- Left Stimulation Pad -->
+            <rect id="tvnsPadLeft" x="140" y="142" width="26" height="26" rx="5" 
+                  fill="url(#goldPadGrad)" stroke="#F59E0B" stroke-width="1.5" filter="url(#glowAmber)"/>
+            <text x="153" y="159" font-family="'JetBrains Mono'" font-size="8" font-weight="800" fill="#090D16" text-anchor="middle">tVNS-</text>
+
+            <!-- Right Stimulation Pad -->
+            <rect id="tvnsPadRight" x="374" y="142" width="26" height="26" rx="5" 
+                  fill="url(#goldPadGrad)" stroke="#F59E0B" stroke-width="1.5" filter="url(#glowAmber)"/>
+            <text x="387" y="159" font-family="'JetBrains Mono'" font-size="8" font-weight="800" fill="#090D16" text-anchor="middle">tVNS+</text>
+
+            <!-- Animated Electric Lightning Arcs (Discharge across nerve junction during Stage 2) -->
+            <path id="tvnsArc1" class="tvns-arc" d="M 166 150 Q 215 130 240 155 T 374 150"/>
+            <path id="tvnsArc2" class="tvns-arc" d="M 166 160 Q 220 180 270 155 T 374 160"/>
+            <path id="tvnsArc3" class="tvns-arc" d="M 166 155 Q 260 115 374 155"/>
+
+            <!-- 3. Central TinyML Core / Nordic nRF52840 SoC Module -->
+            <rect x="238" y="132" width="64" height="46" rx="6" 
+                  fill="#0B132B" stroke="var(--neon-cyan)" stroke-width="1.5" filter="url(#glowCyan)"/>
+            <text x="270" y="147" font-family="'JetBrains Mono'" font-size="8.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">TINYML CORE</text>
+            <text x="270" y="158" font-family="'JetBrains Mono'" font-size="7" fill="var(--neon-cyan)" text-anchor="middle">nRF52840 SoC</text>
+            <text x="270" y="168" font-family="'JetBrains Mono'" font-size="6.5" fill="#64748B" text-anchor="middle">250Hz INTG</text>
+
+            <!-- Status Indicator Micro-LEDs on Chip -->
+            <circle id="ledPwr" cx="246" cy="139" r="2" fill="#10B981" filter="url(#glowGreen)"/>
+            <circle id="ledBle" cx="253" cy="139" r="2" fill="#00F0FF" filter="url(#glowCyan)"/>
+            <circle id="ledStim" cx="287" cy="139" r="2" fill="#64748B"/>
+            <circle id="ledDrug" cx="294" cy="139" r="2" fill="#64748B"/>
+
+            <!-- 4. Piezoelectric Microneedle Drug Reservoir (Midazolam 5mg) -->
+            <g id="microneedleReservoirGroup">
+              <!-- Outer Titanium Frame -->
+              <rect x="242" y="184" width="56" height="24" rx="4" 
+                    fill="#0A101D" stroke="rgba(245, 158, 11, 0.4)" stroke-width="1.2"/>
+              <!-- Liquid Chamber Clip -->
+              <clipPath id="reservoirClip">
+                <rect x="244" y="186" width="52" height="20" rx="3"/>
+              </clipPath>
+              <!-- Liquid Substance -->
+              <g clip-path="url(#reservoirClip)">
+                <rect id="svgDrugLiquid" class="drug-fluid-level" x="244" y="186" width="52" height="20" 
+                      fill="url(#drugLiquidGrad)"/>
+                <!-- Liquid surface meniscus line -->
+                <line id="svgDrugSurface" x1="244" y1="186" x2="296" y2="186" stroke="#FEF08A" stroke-width="1.5"/>
+              </g>
+              <text x="270" y="199" font-family="'JetBrains Mono'" font-size="7" font-weight="700" fill="#FFFFFF" text-anchor="middle" style="pointer-events:none;">MIDAZOLAM 5mg</text>
+
+              <!-- Array of 8 Microneedles facing downward (Sub-dermal Iontophoresis) -->
+              <g stroke="rgba(245, 158, 11, 0.7)" stroke-width="1" fill="#F59E0B">
+                <polygon points="247,208 249,214 251,208"/>
+                <polygon points="253,208 255,214 257,208"/>
+                <polygon points="259,208 261,214 263,208"/>
+                <polygon points="265,208 267,214 269,208"/>
+                <polygon points="271,208 273,214 275,208"/>
+                <polygon points="277,208 279,214 281,208"/>
+                <polygon points="283,208 285,214 287,208"/>
+                <polygon points="289,208 291,214 293,208"/>
+              </g>
+
+              <!-- Capillary Drug Diffusion Emission Waves (Fires in Stage 3) -->
+              <ellipse id="diffusionWave" cx="270" cy="216" rx="0" ry="0" fill="none" 
+                       stroke="#EF4444" stroke-width="2" opacity="0"/>
+            </g>
+
+            <!-- Technical Labels / Callout Pointers -->
+            <g font-family="'JetBrains Mono'" font-size="7.5" fill="var(--text-muted)">
+              <!-- Left Callout -->
+              <line x1="140" y1="130" x2="110" y2="110" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1"/>
+              <text x="105" y="108" text-anchor="end" fill="var(--neon-emerald)">Ag/AgCl Sensor</text>
+
+              <!-- Center Left Callout -->
+              <line x1="153" y1="170" x2="120" y2="185" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1"/>
+              <text x="115" y="188" text-anchor="end" fill="#FCD34D">tVNS Biphasic Pad</text>
+
+              <!-- Right Callout -->
+              <line x1="298" y1="196" x2="335" y2="205" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1"/>
+              <text x="340" y="208" text-anchor="start" fill="#F59E0B">Microneedle Array (64-Ch)</text>
+
+              <!-- Center Top Callout -->
+              <line x1="270" y1="75" x2="270" y2="40" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1"/>
+              <text x="270" y="36" text-anchor="middle" fill="var(--neon-cyan)">USP Class VI Hydrogel Matrix</text>
+            </g>
+          </svg>
+
+          <!-- Dynamic Hover Tooltip -->
+          <div id="patchTooltip" class="patch-tooltip-popup">
+            <h4 id="tooltipTitle">Subsystem</h4>
+            <p id="tooltipDesc">Details...</p>
+          </div>
+        </div>
+
+        <!-- Callout Badges below Patch -->
+        <div class="patch-callouts">
+          <div class="patch-badge">
+            <span class="dot" style="background: var(--neon-emerald);"></span>
+            <span>SKIN CONTACT: 99.4% CONFORMAL</span>
+          </div>
+          <div class="patch-badge">
+            <span class="dot" style="background: var(--neon-cyan);"></span>
+            <span>tVNS IMPEDANCE: 420 Ω</span>
+          </div>
+          <div class="patch-badge">
+            <span class="dot" style="background: #F59E0B;"></span>
+            <span>CARTRIDGE: 5.0mg MIDAZOLAM READY</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Closed-Loop State Machine Stepper (5 States / 4 Stages) -->
+      <div class="glass-panel pipeline-card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <!-- Flow Stepper Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            <span>Autonomous Closed-Loop Intervention Engine</span>
+          </div>
+          <div class="panel-subtitle" id="pipelineStateTitle">STAGE 0: CONTINUOUS EDGE MONITORING</div>
+        </div>
+
+        <div class="pipeline-steps">
+
+          <!-- Stage 0 -->
+          <div id="stepStage0" class="step-item active">
+            <div class="step-index-badge">0</div>
+            <div class="step-content">
+              <div class="step-title-row">
+                <span class="step-name">Continuous Edge Monitoring</span>
+                <span class="step-state-tag" id="tagStage0">TRIPLE FUSION LOCK</span>
+              </div>
+              <div class="step-desc">
+                250Hz Real-time feature extraction: Spectral power (EEG) + RMSSD (HRV) + Tonic EDA (GSR). TinyML inference runs every 100ms.
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage 1 -->
+          <div id="stepStage1" class="step-item">
+            <div class="step-index-badge">1</div>
+            <div class="step-content">
+              <div class="step-title-row">
+                <span class="step-name">Pre-Ictal Anomaly Detected (T-45s)</span>
+                <span class="step-state-tag" id="tagStage1">STANDBY</span>
+              </div>
+              <div class="step-desc" id="descStage1">
+                Polyspike phase-lock synchrony detected. 180Hz vibratory haptic alert on patient's skin with a 10s False Alarm Override window.
+              </div>
+              <div id="countdownBarWrapper" class="countdown-bar-wrapper">
+                <div id="countdownBarFill" class="countdown-bar-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage 2 -->
+          <div id="stepStage2" class="step-item">
+            <div class="step-index-badge">2</div>
+            <div class="step-content">
+              <div class="step-title-row">
+                <span class="step-name">Electrical Intervention (tVNS Micro-Impulse)</span>
+                <span class="step-state-tag" id="tagStage2">STANDBY</span>
+              </div>
+              <div class="step-desc" id="descStage2">
+                Fires 25Hz biphasic 1.5mA pulses to left cervical branch of Vagus Nerve to suppress thalamocortical hypersynchrony before onset.
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage 3 -->
+          <div id="stepStage3" class="step-item">
+            <div class="step-index-badge">3</div>
+            <div class="step-content">
+              <div class="step-title-row">
+                <span class="step-name">Transdermal Anticonvulsant Delivery</span>
+                <span class="step-state-tag" id="tagStage3">STANDBY</span>
+              </div>
+              <div class="step-desc" id="descStage3">
+                If seizure energy persists > 6s, piezoelectric micropump activates painless microneedle iontophoresis delivering 5mg Fast-Acting Midazolam.
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage 4 -->
+          <div id="stepStage4" class="step-item">
+            <div class="step-index-badge">4</div>
+            <div class="step-content">
+              <div class="step-title-row">
+                <span class="step-name">Autonomous Emergency SOS & Telemetry Packet</span>
+                <span class="step-state-tag" id="tagStage4">STANDBY</span>
+              </div>
+              <div class="step-desc" id="descStage4">
+                Encrypted cellular broadcast (LTE-M) to SRM General Hospital Trauma Unit & Family Caregivers with live GNSS coordinates and vitals.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- -----------------------------------------------------------------------
+         RIGHT COLUMN: GPS TRACKER, EMERGENCY SOS DISPATCH & CLINICAL TERMINAL
+         ----------------------------------------------------------------------- -->
+    <section class="col-right">
+
+      <!-- Live GPS Radar Card -->
+      <div class="glass-panel gps-card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <!-- Map Pin Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>Live GNSS Tactical Radar</span>
+          </div>
+          <span class="panel-subtitle" id="gpsLockStatus">GNSS LOCK: 9 SATS</span>
+        </div>
+
+        <div class="gps-display">
+          <!-- Tactical Canvas Sweep -->
+          <canvas id="canvasRadar" class="radar-canvas"></canvas>
+
+          <div class="radar-info-overlay">
+            <div class="gps-fix-chip">
+              <span style="display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--neon-cyan);"></span>
+              <span>ACCURACY: ±1.2m</span>
+            </div>
+            <div class="gps-fix-chip" style="color: #94A3B8; border-color: rgba(255,255,255,0.1);">
+              <span>ALT: 18m MSL</span>
+            </div>
+          </div>
+
+          <!-- Radar Target Center Pin -->
+          <div id="radarPin" class="radar-target-pin">
+            <div class="target-dot">
+              <div class="target-ripple"></div>
+            </div>
+            <div class="target-tooltip">
+              <div class="campus-name">SRM IST Ramapuram Campus</div>
+              <div class="geo-coord">13.0329° N, 80.1806° E (Block 3)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Caregiver Smartphone SOS Dispatch Notification Card -->
+      <div id="sosDispatchCard" class="sos-dispatch-card">
+        <div class="sos-header">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span style="font-size: 10.5px; font-weight: 700; color: #FFFFFF;">EMERGENCY SOS DISPATCH</span>
+          </div>
+          <span id="sosStatusBadge" class="sos-badge-pill">STANDBY MONITORING</span>
+        </div>
+
+        <div class="sos-body">
+          <div class="phone-notification-bubble">
+            <div class="phone-icon-alert">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+            </div>
+            <div class="phone-text-group">
+              <div class="phone-title">
+                <span>SRM Hospital EMS & Caregiver</span>
+                <span class="time" id="sosTimestamp">10:42:15</span>
+              </div>
+              <div class="phone-msg" id="sosMessageBody">
+                🚨 <strong>CRITICAL SEIZURE ALERT:</strong> Patient <strong>NG-SRM-042</strong>. Pre-ictal tVNS + 5mg Midazolam auto-administered. Location: <strong>SRM Ramapuram Block 3</strong> (13.0329° N, 80.1806° E). Telemetry stream live.
+              </div>
+            </div>
+          </div>
+
+          <div class="sos-actions-row">
+            <button class="btn-sos-action primary" onclick="triggerSimulatedCall()">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              <span>CALL 108 EMS</span>
+            </button>
+            <button class="btn-sos-action" onclick="logTerminal('USER', 'Caregiver telemetry uplink established with 4K vitals bridge.')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <span>HOSPITAL VITALS</span>
+            </button>
+            <button class="btn-sos-action" onclick="logTerminal('GPS', 'Route vector plotted to SRM Ramapuram Block 3 (ETA: 4 mins).')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+              </svg>
+              <span>GPS ROUTE</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Clinical Audit Terminal -->
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="terminal-dots">
+              <span class="t-dot r"></span>
+              <span class="t-dot y"></span>
+              <span class="t-dot g"></span>
+            </div>
+            <span style="color:#CBD5E1; font-weight:700;">EDGE-AI CLINICAL AUDIT TRAIL</span>
+          </div>
+          <div class="terminal-controls">
+            <button class="terminal-btn" id="btnToggleAutoScroll">SCROLL: ON</button>
+            <button class="terminal-btn" id="btnClearLog">CLEAR</button>
+          </div>
+        </div>
+
+        <div class="terminal-output" id="terminalOutput">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       FOOTER STATUS BAR
+       ========================================================================= -->
+  <footer class="status-bar">
+    <div class="footer-left">
+      <div class="footer-stat">
+        <span>TINYML INFERENCE:</span>
+        <span class="val" style="color:var(--neon-emerald);" id="footerInference">100Hz (3.8ms Latency)</span>
+      </div>
+      <div class="footer-stat">
+        <span>F1-SCORE CLASSIFIER:</span>
+        <span class="val">99.2% (TCN-LSTM Quantized)</span>
+      </div>
+      <div class="footer-stat">
+        <span>POWER CONSUMPTION:</span>
+        <span class="val">1.84 mW (nRF52840 Low-Power Run)</span>
+      </div>
+    </div>
+
+    <div class="footer-right">
+      <div class="footer-stat">
+        <span>BATTERY:</span>
+        <span class="val" style="color:var(--neon-cyan);">94% (36h Remaining)</span>
+      </div>
+      <div class="clinical-pill">
+        <span>ISO 13485 & IEC 60601-1 COMPLIANT</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       JAVASCRIPT APPLICATION LOGIC & STATE MACHINE
+       ========================================================================= -->
+  <script>
+    /* =========================================================================
+       1. GLOBAL STATE & CONFIGURATION
+       ========================================================================= */
+    const State = {
+      // Simulation Stages: 0: Normal, 1: Pre-Ictal Warning, 2: tVNS Stim, 3: Midazolam Drug, 4: SOS & Recovery
+      stage: 0,
+      isSeizureActive: false,
+      isOverridePossible: false,
+      isSoundEnabled: true,
+      autoScrollTerminal: true,
+
+      // Vitals Numeric State
+      vitals: {
+        eegFreq: 10.4,
+        eegAmp: 22.0,
+        eegPLV: 0.18,
+        hr: 74,
+        hrv: 62,
+        eda: 2.14,
+        imu: 0.02,
+        drugLevel: 100.0 // 100% (5mg)
+      },
+
+      // Targets for smooth numeric interpolation
+      targets: {
+        eegFreq: 10.4,
+        eegAmp: 22.0,
+        eegPLV: 0.18,
+        hr: 74,
+        hrv: 62,
+        eda: 2.14,
+        imu: 0.02,
+        drugLevel: 100.0
+      },
+
+      // Simulation Timeline Timers
+      timelineTimers: [],
+      hapticInterval: null,
+      countdownRemaining: 5.0
+    };
+
+    /* =========================================================================
+       2. WEB AUDIO API SYNTHESIZER (ZERO EXTERNAL SOUND FILES)
+       ========================================================================= */
+    class ClinicalAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq, type = 'sine', duration = 0.08, gainVal = 0.08) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {
+          console.warn('Audio error:', e);
+        }
+      }
+
+      // Normal calm clinical pulse pip (PPG-synced)
+      playPip() {
+        this.playTone(880, 'sine', 0.04, 0.03);
+      }
+
+      // Pre-Ictal Warning Alarm Chime
+      playWarningAlarm() {
+        if (this.muted) return;
+        this.playTone(880, 'triangle', 0.1, 0.07);
+        setTimeout(() => this.playTone(1174, 'triangle', 0.14, 0.07), 110);
+      }
+
+      // Electrical tVNS Buzz (25Hz simulated modulation)
+      playTvnsImpulse() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const mod = this.ctx.createOscillator();
+          const modGain = this.ctx.createGain();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.value = 140;
+
+          mod.type = 'square';
+          mod.frequency.value = 25; // 25 Hz biphasic
+          modGain.gain.value = 70;
+
+          mod.connect(osc.frequency);
+
+          gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.35);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          mod.start();
+          osc.start();
+          mod.stop(this.ctx.currentTime + 0.35);
+          osc.stop(this.ctx.currentTime + 0.35);
+        } catch (e) {}
+      }
+
+      // Transdermal Microneedle Drug Delivery Hydraulic Whoosh
+      playDrugDelivery() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(220, this.ctx.currentTime + 0.5);
+
+          gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.5);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.5);
+        } catch (e) {}
+      }
+
+      // Override / Cancel Chime
+      playOverrideChime() {
+        if (this.muted) return;
+        this.playTone(523.25, 'sine', 0.09, 0.06);
+        setTimeout(() => this.playTone(659.25, 'sine', 0.15, 0.07), 100);
+      }
+
+      // Stabilization Harmonic Cadence
+      playStabilizedChord() {
+        if (this.muted) return;
+        this.playTone(523.25, 'sine', 0.4, 0.05); // C5
+        setTimeout(() => this.playTone(659.25, 'sine', 0.4, 0.05), 80);  // E5
+        setTimeout(() => this.playTone(783.99, 'sine', 0.5, 0.05), 160); // G5
+        setTimeout(() => this.playTone(1046.5, 'sine', 0.6, 0.05), 240); // C6
+      }
+    }
+
+    const sound = new ClinicalAudioEngine();
+
+    /* =========================================================================
+       3. CLINICAL TERMINAL AUDIT LOGGER
+       ========================================================================= */
+    const terminalEl = document.getElementById('terminalOutput');
+
+    function getFormattedTimestamp() {
+      const now = new Date();
+      const hrs = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const sec = String(now.getSeconds()).padStart(2, '0');
+      const ms = String(now.getMilliseconds()).padStart(3, '0');
+      return `${hrs}:${min}:${sec}.${ms}`;
+    }
+
+    function logTerminal(tag, message, level = 'info') {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'log-time';
+      timeSpan.textContent = `[${getFormattedTimestamp()}]`;
+
+      const tagSpan = document.createElement('span');
+      tagSpan.className = `log-tag ${level}`;
+      tagSpan.textContent = `[${tag}]`;
+
+      const textSpan = document.createElement('span');
+      textSpan.className = 'log-text';
+      textSpan.textContent = message;
+
+      line.appendChild(timeSpan);
+      line.appendChild(tagSpan);
+      line.appendChild(textSpan);
+
+      terminalEl.appendChild(line);
+
+      if (State.autoScrollTerminal) {
+        terminalEl.scrollTop = terminalEl.scrollHeight;
+      }
+
+      // Limit buffer to 120 lines
+      if (terminalEl.children.length > 120) {
+        terminalEl.removeChild(terminalEl.firstChild);
+      }
+    }
+
+    // Seed Initial Clinical Audit Trail
+    function seedInitialLogs() {
+      logTerminal('BOOT', 'NeuroGuard OS v4.2.1 initialized on nRF52840 Cortex-M4F.', 'success');
+      logTerminal('TINYML', 'Pre-ictal TCN-LSTM model loaded: 98.4kB weights in Flash. Quant: INT8.', 'tinyml');
+      logTerminal('SENSORS', 'Ag/AgCl contact impedance calibrated: 12.4 kΩ. Signal SNR: 34.2 dB.', 'info');
+      logTerminal('tVNS', 'Auricular/cervical vagal electrodes armed. Biphasic stimulator safe at 1.5mA.', 'info');
+      logTerminal('DRUG', 'Piezo cartridge verified: 5.0mg Midazolam reservoir 100% full.', 'info');
+      logTerminal('GNSS', 'Galileo/GPS constellation locked: 9 Satellites (13.0329° N, 80.1806° E).', 'info');
+      logTerminal('STATUS', 'Triple-sensor fusion loop ACTIVE. Awaiting pre-ictal phase shifts...', 'success');
+    }
+
+    /* =========================================================================
+       4. HTML5 CANVAS REAL-TIME OSCILLOSCOPES (60 FPS RENDERING ENGINE)
+       ========================================================================= */
+    const canvasEEG = document.getElementById('canvasEEG');
+    const ctxEEG = canvasEEG.getContext('2d');
+
+    const canvasPPG = document.getElementById('canvasPPG');
+    const ctxPPG = canvasPPG.getContext('2d');
+
+    const canvasGSR = document.getElementById('canvasGSR');
+    const ctxGSR = canvasGSR.getContext('2d');
+
+    const canvasRadar = document.getElementById('canvasRadar');
+    const ctxRadar = canvasRadar.getContext('2d');
+
+    function resizeCanvases() {
+      const dpr = window.devicePixelRatio || 1;
+      [canvasEEG, canvasPPG, canvasGSR, canvasRadar].forEach(c => {
+        if (!c) return;
+        const rect = c.getBoundingClientRect();
+        c.width = rect.width * dpr;
+        c.height = rect.height * dpr;
+        const ctx = c.getContext('2d');
+        ctx.scale(dpr, dpr);
+      });
+    }
+    window.addEventListener('resize', resizeCanvases);
+
+    // Waveform Buffers for Oscilloscope Scroll
+    const BUF_SIZE = 360;
+    const bufferEEG = new Array(BUF_SIZE).fill(0);
+    const bufferPPG = new Array(BUF_SIZE).fill(0);
+    const bufferGSR = new Array(BUF_SIZE).fill(0);
+
+    let waveTime = 0;
+    let ppgPhase = 0;
+    let radarAngle = 0;
+
+    // Mathematical Synthesizers for Biosensor Signals
+    function generateNextSamples() {
+      waveTime += 0.035;
+
+      // 1. Dry-Electrode EEG Waveform
+      let eegVal = 0;
+      if (State.stage === 0) {
+        // Normal Alpha/Beta: 10 Hz rhythm + low harmonic
+        eegVal = Math.sin(waveTime * 10) * 14 + Math.sin(waveTime * 21) * 5 + (Math.random() - 0.5) * 4;
+      } else if (State.stage >= 1 && State.stage <= 3) {
+        // Pre-Ictal / Seizure Paroxysm: Chaotic High-Frequency Polyspike (28-42 Hz) + 3Hz Sharp Wave
+        const spike = Math.pow(Math.abs(Math.sin(waveTime * 32)), 4) * 55 * (Math.sin(waveTime * 32) > 0 ? 1 : -1);
+        const slowWave = Math.sin(waveTime * 3.2) * 35;
+        const polyspikes = (Math.sin(waveTime * 48) + Math.cos(waveTime * 64)) * 25;
+        eegVal = spike + slowWave + polyspikes + (Math.random() - 0.5) * 16;
+      } else {
+        // Stage 4: Post-ictal Burst Suppression transitioning to stabilizing normal rhythm
+        eegVal = Math.sin(waveTime * 9) * 15 + Math.sin(waveTime * 18) * 4 + (Math.random() - 0.5) * 5;
+      }
+
+      bufferEEG.shift();
+      bufferEEG.push(eegVal);
+
+      // 2. PPG Arterial Pulse Waveform (Systolic peak + dicrotic notch)
+      const currentHR = State.vitals.hr;
+      const beatFreq = (currentHR / 60) * 0.035 * 6.283;
+      ppgPhase += beatFreq;
+      if (ppgPhase > Math.PI * 2) {
+        ppgPhase -= Math.PI * 2;
+        // Trigger subtle clinical heartbeat audio pip
+        if (State.stage === 0) {
+          sound.playPip();
+        }
+      }
+
+      let ppgVal = 0;
+      const modPhase = ppgPhase;
+      if (modPhase < 1.0) {
+        // Systolic upstroke & primary percussion peak
+        ppgVal = Math.sin(modPhase * Math.PI) * 40;
+      } else if (modPhase >= 1.0 && modPhase < 1.6) {
+        // Dicrotic notch dip & secondary dicrotic peak
+        const sub = (modPhase - 1.0) / 0.6;
+        ppgVal = 10 + Math.sin(sub * Math.PI) * 12;
+      } else {
+        // Diastolic runoff
+        const sub = (modPhase - 1.6) / (Math.PI * 2 - 1.6);
+        ppgVal = 10 * Math.exp(-sub * 2.5);
+      }
+      // Add subtle noise
+      ppgVal += (Math.random() - 0.5) * 1.5;
+      bufferPPG.shift();
+      bufferPPG.push(ppgVal);
+
+      // 3. GSR / EDA + IMU Tremor Waveform
+      let gsrVal = 0;
+      if (State.stage === 0) {
+        // Calm resting baseline 2.1 μS with minor breath fluctuation
+        gsrVal = Math.sin(waveTime * 0.4) * 3 + (Math.random() - 0.5) * 1.5;
+      } else if (State.stage >= 1 && State.stage <= 3) {
+        // Autonomic Sweat Storm + Clonic Tremor oscillation (4-6Hz muscle shake)
+        const sweatSurge = 24 + Math.sin(waveTime * 0.2) * 5;
+        const clonicTremor = Math.sin(waveTime * 14) * 18 + (Math.random() - 0.5) * 12;
+        gsrVal = sweatSurge + clonicTremor;
+      } else {
+        // Stabilizing
+        gsrVal = Math.sin(waveTime * 0.4) * 4 + (Math.random() - 0.5) * 2;
+      }
+      bufferGSR.shift();
+      bufferGSR.push(gsrVal);
+    }
+
+    // Render Canvas Oscilloscope Frame
+    function renderWaveforms() {
+      generateNextSamples();
+
+      const dpr = window.devicePixelRatio || 1;
+
+      // 1. Render EEG
+      const w1 = canvasEEG.width / dpr;
+      const h1 = canvasEEG.height / dpr;
+      ctxEEG.clearRect(0, 0, w1, h1);
+
+      const mid1 = h1 / 2;
+      const isAlarm = State.stage >= 1 && State.stage <= 3;
+      const eegColor = isAlarm ? '#EF4444' : '#10B981';
+
+      ctxEEG.beginPath();
+      ctxEEG.strokeStyle = eegColor;
+      ctxEEG.lineWidth = isAlarm ? 2.0 : 1.8;
+      ctxEEG.lineJoin = 'round';
+
+      for (let i = 0; i < BUF_SIZE; i++) {
+        const x = (i / (BUF_SIZE - 1)) * w1;
+        const scale = isAlarm ? 0.45 : 0.65;
+        const y = mid1 - bufferEEG[i] * scale;
+        if (i === 0) ctxEEG.moveTo(x, y);
+        else ctxEEG.lineTo(x, y);
+      }
+      ctxEEG.stroke();
+
+      // Glowing tip at the leading edge
+      const lastX1 = w1;
+      const lastY1 = mid1 - bufferEEG[BUF_SIZE - 1] * (isAlarm ? 0.45 : 0.65);
+      ctxEEG.beginPath();
+      ctxEEG.arc(lastX1 - 2, lastY1, 3.5, 0, Math.PI * 2);
+      ctxEEG.fillStyle = '#FFFFFF';
+      ctxEEG.shadowColor = eegColor;
+      ctxEEG.shadowBlur = 10;
+      ctxEEG.fill();
+      ctxEEG.shadowBlur = 0;
+
+      // 2. Render PPG
+      const w2 = canvasPPG.width / dpr;
+      const h2 = canvasPPG.height / dpr;
+      ctxPPG.clearRect(0, 0, w2, h2);
+
+      const mid2 = h2 * 0.7;
+      const ppgColor = isAlarm ? '#F59E0B' : '#00F0FF';
+
+      ctxPPG.beginPath();
+      ctxPPG.strokeStyle = ppgColor;
+      ctxPPG.lineWidth = 2.0;
+      ctxPPG.lineJoin = 'round';
+
+      for (let i = 0; i < BUF_SIZE; i++) {
+        const x = (i / (BUF_SIZE - 1)) * w2;
+        const y = mid2 - bufferPPG[i] * (h2 * 0.012);
+        if (i === 0) ctxPPG.moveTo(x, y);
+        else ctxPPG.lineTo(x, y);
+      }
+      ctxPPG.stroke();
+
+      // Lead tip
+      const lastY2 = mid2 - bufferPPG[BUF_SIZE - 1] * (h2 * 0.012);
+      ctxPPG.beginPath();
+      ctxPPG.arc(w2 - 2, lastY2, 3.5, 0, Math.PI * 2);
+      ctxPPG.fillStyle = '#FFFFFF';
+      ctxPPG.shadowColor = ppgColor;
+      ctxPPG.shadowBlur = 10;
+      ctxPPG.fill();
+      ctxPPG.shadowBlur = 0;
+
+      // 3. Render GSR / IMU
+      const w3 = canvasGSR.width / dpr;
+      const h3 = canvasGSR.height / dpr;
+      ctxGSR.clearRect(0, 0, w3, h3);
+
+      const mid3 = h3 * 0.6;
+      const gsrColor = isAlarm ? '#EF4444' : '#818CF8';
+
+      ctxGSR.beginPath();
+      ctxGSR.strokeStyle = gsrColor;
+      ctxGSR.lineWidth = 1.9;
+      ctxGSR.lineJoin = 'round';
+
+      for (let i = 0; i < BUF_SIZE; i++) {
+        const x = (i / (BUF_SIZE - 1)) * w3;
+        const y = mid3 - bufferGSR[i] * (h3 * 0.011);
+        if (i === 0) ctxGSR.moveTo(x, y);
+        else ctxGSR.lineTo(x, y);
+      }
+      ctxGSR.stroke();
+
+      // Lead tip
+      const lastY3 = mid3 - bufferGSR[BUF_SIZE - 1] * (h3 * 0.011);
+      ctxGSR.beginPath();
+      ctxGSR.arc(w3 - 2, lastY3, 3.5, 0, Math.PI * 2);
+      ctxGSR.fillStyle = '#FFFFFF';
+      ctxGSR.shadowColor = gsrColor;
+      ctxGSR.shadowBlur = 10;
+      ctxGSR.fill();
+      ctxGSR.shadowBlur = 0;
+
+      // 4. Render Tactical GPS Radar
+      renderRadar();
+
+      // Animate next frame
+      requestAnimationFrame(renderWaveforms);
+    }
+
+    // Render Radar Canvas (Tactical Sweep + Rings)
+    function renderRadar() {
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvasRadar.width / dpr;
+      const h = canvasRadar.height / dpr;
+      ctxRadar.clearRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h / 2;
+      const maxR = Math.min(cx, cy) - 10;
+
+      const isSeizure = State.stage >= 1 && State.stage <= 3;
+      const radarColor = isSeizure ? 'rgba(239, 68, 68, ' : 'rgba(0, 240, 255, ';
+
+      // Concentric Distance Rings
+      ctxRadar.lineWidth = 1;
+      for (let r = maxR * 0.3; r <= maxR; r += maxR * 0.35) {
+        ctxRadar.beginPath();
+        ctxRadar.strokeStyle = radarColor + '0.15)';
+        ctxRadar.arc(cx, cy, r, 0, Math.PI * 2);
+        ctxRadar.stroke();
+      }
+
+      // Crosshairs
+      ctxRadar.beginPath();
+      ctxRadar.strokeStyle = radarColor + '0.18)';
+      ctxRadar.moveTo(cx - maxR, cy);
+      ctxRadar.lineTo(cx + maxR, cy);
+      ctxRadar.moveTo(cx, cy - maxR);
+      ctxRadar.lineTo(cx, cy + maxR);
+      ctxRadar.stroke();
+
+      // Rotating Radar Sweep Beam
+      radarAngle += 0.035;
+      if (radarAngle > Math.PI * 2) radarAngle -= Math.PI * 2;
+
+      const sweepGrad = ctxRadar.createRadialGradient(cx, cy, 0, cx, cy, maxR);
+      sweepGrad.addColorStop(0, radarColor + '0.3)');
+      sweepGrad.addColorStop(1, radarColor + '0.01)');
+
+      ctxRadar.save();
+      ctxRadar.beginPath();
+      ctxRadar.moveTo(cx, cy);
+      ctxRadar.arc(cx, cy, maxR, radarAngle - 0.45, radarAngle);
+      ctxRadar.closePath();
+      ctxRadar.fillStyle = sweepGrad;
+      ctxRadar.fill();
+
+      // Leading beam line
+      ctxRadar.beginPath();
+      ctxRadar.strokeStyle = radarColor + '0.7)';
+      ctxRadar.lineWidth = 1.8;
+      ctxRadar.moveTo(cx, cy);
+      ctxRadar.lineTo(cx + Math.cos(radarAngle) * maxR, cy + Math.sin(radarAngle) * maxR);
+      ctxRadar.stroke();
+      ctxRadar.restore();
+    }
+
+    /* =========================================================================
+       5. REAL-TIME NUMERIC HUD INTERPOLATION LOOP
+       ========================================================================= */
+    function updateNumericHUD() {
+      // Smooth lerp (linear interpolation)
+      const lerp = (a, b, t) => a + (b - a) * t;
+
+      State.vitals.eegFreq = lerp(State.vitals.eegFreq, State.targets.eegFreq, 0.08);
+      State.vitals.eegAmp = lerp(State.vitals.eegAmp, State.targets.eegAmp, 0.08);
+      State.vitals.eegPLV = lerp(State.vitals.eegPLV, State.targets.eegPLV, 0.08);
+      State.vitals.hr = lerp(State.vitals.hr, State.targets.hr, 0.06);
+      State.vitals.hrv = lerp(State.vitals.hrv, State.targets.hrv, 0.08);
+      State.vitals.eda = lerp(State.vitals.eda, State.targets.eda, 0.08);
+      State.vitals.imu = lerp(State.vitals.imu, State.targets.imu, 0.08);
+      State.vitals.drugLevel = lerp(State.vitals.drugLevel, State.targets.drugLevel, 0.05);
+
+      // DOM Updates
+      const isAlarm = State.stage >= 1 && State.stage <= 3;
+
+      // EEG HUD
+      const valEEGFreq = document.getElementById('valEEGFreq');
+      valEEGFreq.innerHTML = `${State.vitals.eegFreq.toFixed(1)} <span class="unit">Hz</span>`;
+      valEEGFreq.className = `hud-value ${isAlarm ? 'alert' : 'normal'}`;
+
+      const valEEGAmp = document.getElementById('valEEGAmp');
+      valEEGAmp.innerHTML = `${Math.round(State.vitals.eegAmp)} <span class="unit">μV</span>`;
+      valEEGAmp.className = `hud-value ${isAlarm ? 'alert' : 'normal'}`;
+
+      const valEEGBand = document.getElementById('valEEGBand');
+      valEEGBand.textContent = isAlarm ? 'Gamma Polyspike (28-45Hz)' : 'Alpha (8-12Hz)';
+      valEEGBand.style.color = isAlarm ? '#EF4444' : '#94A3B8';
+
+      const valEEGPLV = document.getElementById('valEEGPLV');
+      valEEGPLV.innerHTML = `${State.vitals.eegPLV.toFixed(2)} <span class="unit">Idx</span>`;
+      valEEGPLV.className = `hud-value ${isAlarm ? 'alert' : 'normal'}`;
+
+      const eegLeadStatus = document.getElementById('eegLeadStatus');
+      eegLeadStatus.textContent = isAlarm ? 'PAROXYSMAL SYNCHRONY (CRITICAL)' : 'IMPEDANCE 12.4 kΩ (LOCK)';
+      eegLeadStatus.style.color = isAlarm ? '#EF4444' : 'var(--neon-emerald)';
+
+      // PPG HUD
+      const valPPGBpm = document.getElementById('valPPGBpm');
+      valPPGBpm.innerHTML = `${Math.round(State.vitals.hr)} <span class="unit">BPM</span>`;
+      valPPGBpm.className = `hud-value ${isAlarm ? 'alert' : 'normal'}`;
+
+      const valPPGHRV = document.getElementById('valPPGHRV');
+      valPPGHRV.innerHTML = `${Math.round(State.vitals.hrv)} <span class="unit">ms</span>`;
+      valPPGHRV.className = `hud-value ${isAlarm ? 'alert' : 'normal'}`;
+
+      const ppgLeadStatus = document.getElementById('ppgLeadStatus');
+      ppgLeadStatus.textContent = isAlarm ? 'TACHYCARDIC SURGE (SpO2 94%)' : 'SpO2 99% (PERFUSED)';
+      ppgLeadStatus.style.color = isAlarm ? '#F59E0B' : 'var(--neon-cyan)';
+
+      const valPPGStatus = document.getElementById('valPPGStatus');
+      valPPGStatus.textContent = isAlarm ? 'Sympathetic Tachycardia' : 'Normal Sinus';
+      valPPGStatus.className = `hud-value ${isAlarm ? 'alert' : 'normal'}`;
+
+      // GSR & IMU HUD
+      const valGSREda = document.getElementById('valGSREda');
+      valGSREda.innerHTML = `${State.vitals.eda.toFixed(2)} <span class="unit">μS</span>`;
+      valGSREda.className = `hud-value ${isAlarm ? 'alert' : 'normal'}`;
+
+      const valIMUMotion = document.getElementById('valIMUMotion');
+      valIMUMotion.innerHTML = `${State.vitals.imu.toFixed(2)} <span class="unit">g</span>`;
+      valIMUMotion.className = `hud-value ${isAlarm ? 'alert' : 'normal'}`;
+
+      const imuStatus = document.getElementById('imuStatus');
+      imuStatus.textContent = isAlarm ? 'CLONIC TREMOR DETECTED (3.4g)' : 'RESTING (0.02g)';
+      imuStatus.style.color = isAlarm ? '#EF4444' : '#A5B4FC';
+
+      const valTremorFreq = document.getElementById('valTremorFreq');
+      valTremorFreq.textContent = isAlarm ? '4.8 Hz (Bilateral Tonic-Clonic)' : '0.1 Hz (None)';
+      valTremorFreq.style.color = isAlarm ? '#EF4444' : '#94A3B8';
+
+      const valAutonomic = document.getElementById('valAutonomic');
+      valAutonomic.textContent = isAlarm ? 'Autonomic Storm (Ictal)' : 'Basal Resting';
+      valAutonomic.className = `hud-value ${isAlarm ? 'alert' : 'normal'}`;
+
+      // Hardware Drug Reservoir Update (Liquid Level SVG & Gauge)
+      const drugPct = Math.max(0, State.vitals.drugLevel);
+      const drugGaugeFill = document.getElementById('drugGaugeFill');
+      drugGaugeFill.style.width = `${drugPct}%`;
+      if (drugPct < 90) drugGaugeFill.classList.add('depleting');
+      else drugGaugeFill.classList.remove('depleting');
+
+      const drugGaugeText = document.getElementById('drugGaugeText');
+      const mgRemaining = (drugPct * 0.05).toFixed(1);
+      drugGaugeText.textContent = `${Math.round(drugPct)}% (${mgRemaining}mg)`;
+
+      // SVG liquid level animation (height & y)
+      const svgDrugLiquid = document.getElementById('svgDrugLiquid');
+      const svgDrugSurface = document.getElementById('svgDrugSurface');
+      const maxH = 20;
+      const curH = (drugPct / 100) * maxH;
+      const curY = 186 + (maxH - curH);
+      svgDrugLiquid.setAttribute('height', curH);
+      svgDrugLiquid.setAttribute('y', curY);
+      svgDrugSurface.setAttribute('y1', curY);
+      svgDrugSurface.setAttribute('y2', curY);
+    }
+    setInterval(updateNumericHUD, 60);
+
+    /* =========================================================================
+       6. CLOSED-LOOP PIPELINE STATE MACHINE & STEPPER CONTROLLER
+       ========================================================================= */
+    const stepStage0 = document.getElementById('stepStage0');
+    const stepStage1 = document.getElementById('stepStage1');
+    const stepStage2 = document.getElementById('stepStage2');
+    const stepStage3 = document.getElementById('stepStage3');
+    const stepStage4 = document.getElementById('stepStage4');
+
+    const tagStage0 = document.getElementById('tagStage0');
+    const tagStage1 = document.getElementById('tagStage1');
+    const tagStage2 = document.getElementById('tagStage2');
+    const tagStage3 = document.getElementById('tagStage3');
+    const tagStage4 = document.getElementById('tagStage4');
+
+    const pipelineStateTitle = document.getElementById('pipelineStateTitle');
+    const btnOverride = document.getElementById('btnOverride');
+    const overrideLabel = document.getElementById('overrideLabel');
+    const countdownBarWrapper = document.getElementById('countdownBarWrapper');
+    const countdownBarFill = document.getElementById('countdownBarFill');
+
+    const sensorRingPath = document.getElementById('sensorRingPath');
+    const tvnsArc1 = document.getElementById('tvnsArc1');
+    const tvnsArc2 = document.getElementById('tvnsArc2');
+    const tvnsArc3 = document.getElementById('tvnsArc3');
+    const ledStim = document.getElementById('ledStim');
+    const ledDrug = document.getElementById('ledDrug');
+
+    const radarPin = document.getElementById('radarPin');
+    const sosDispatchCard = document.getElementById('sosDispatchCard');
+    const sosStatusBadge = document.getElementById('sosStatusBadge');
+    const sosTimestamp = document.getElementById('sosTimestamp');
+
+    function updatePipelineUI(stageIndex) {
+      State.stage = stageIndex;
+
+      // Reset all steps to standby
+      [stepStage0, stepStage1, stepStage2, stepStage3, stepStage4].forEach((el, idx) => {
+        el.className = 'step-item';
+        if (idx < stageIndex) {
+          el.classList.add('completed');
+        }
+      });
+
+      // Target numbers by stage
+      if (stageIndex === 0) {
+        // Normal Sinus Baseline
+        State.targets.eegFreq = 10.4;
+        State.targets.eegAmp = 22.0;
+        State.targets.eegPLV = 0.18;
+        State.targets.hr = 74;
+        State.targets.hrv = 62;
+        State.targets.eda = 2.14;
+        State.targets.imu = 0.02;
+        State.targets.drugLevel = 100.0;
+
+        document.body.classList.remove('seizure-alert-active');
+        pipelineStateTitle.textContent = 'STAGE 0: CONTINUOUS EDGE MONITORING';
+        stepStage0.className = 'step-item active';
+        tagStage0.textContent = 'TRIPLE FUSION LOCK';
+        tagStage1.textContent = 'STANDBY';
+        tagStage2.textContent = 'STANDBY';
+        tagStage3.textContent = 'STANDBY';
+        tagStage4.textContent = 'STANDBY';
+
+        sensorRingPath.classList.remove('alert');
+        [tvnsArc1, tvnsArc2, tvnsArc3].forEach(a => a.classList.remove('firing'));
+        ledStim.setAttribute('fill', '#64748B');
+        ledDrug.setAttribute('fill', '#64748B');
+
+        radarPin.classList.remove('seizure-active');
+        sosDispatchCard.classList.remove('active-sos');
+        sosStatusBadge.textContent = 'STANDBY MONITORING';
+
+        btnOverride.disabled = true;
+        btnOverride.classList.remove('active');
+        overrideLabel.textContent = 'FALSE ALARM OVERRIDE';
+        countdownBarWrapper.style.display = 'none';
+
+      } else if (stageIndex === 1) {
+        // Pre-Ictal Anomaly Detected (T-45s)
+        State.targets.eegFreq = 38.4;
+        State.targets.eegAmp = 245.0;
+        State.targets.eegPLV = 0.94;
+        State.targets.hr = 138;
+        State.targets.hrv = 16;
+        State.targets.eda = 12.4;
+        State.targets.imu = 2.8;
+
+        document.body.classList.add('seizure-alert-active');
+        pipelineStateTitle.textContent = 'STAGE 1: PRE-ICTAL ANOMALY DETECTED (T-45s)';
+        stepStage1.className = 'step-item active alarm';
+        tagStage1.textContent = 'HAPTIC WARNING ACTIVE';
+
+        sensorRingPath.classList.add('alert');
+        radarPin.classList.add('seizure-active');
+
+        // False alarm override enabled
+        btnOverride.disabled = false;
+        btnOverride.classList.add('active');
+        countdownBarWrapper.style.display = 'block';
+
+      } else if (stageIndex === 2) {
+        // Stage 2: Electrical Intervention (tVNS Micro-Impulse)
+        pipelineStateTitle.textContent = 'STAGE 2: ELECTRICAL INTERVENTION (tVNS 25Hz ACTIVE)';
+        stepStage2.className = 'step-item active';
+        tagStage2.textContent = '25Hz BIPHASIC FIRING';
+
+        // Animate lightning arcs on SVG
+        [tvnsArc1, tvnsArc2, tvnsArc3].forEach(a => a.classList.add('firing'));
+        ledStim.setAttribute('fill', '#00F0FF');
+        sound.playTvnsImpulse();
+
+        // Override button now closed (intervention underway)
+        btnOverride.disabled = true;
+        btnOverride.classList.remove('active');
+        overrideLabel.textContent = 'INTERVENTION ENGAGED';
+        countdownBarWrapper.style.display = 'none';
+
+      } else if (stageIndex === 3) {
+        // Stage 3: Transdermal Anticonvulsant Delivery (Midazolam 5mg)
+        pipelineStateTitle.textContent = 'STAGE 3: TRANSDERMAL MIDAZOLAM DELIVERY (5mg)';
+        stepStage3.className = 'step-item active warning';
+        tagStage3.textContent = 'IONTOPHORESIS PUMPING';
+
+        ledDrug.setAttribute('fill', '#EF4444');
+        sound.playDrugDelivery();
+
+        // Rapid depletion of drug reservoir
+        State.targets.drugLevel = 0.0;
+
+        // Animate capillary diffusion aura
+        const diffWave = document.getElementById('diffusionWave');
+        diffWave.setAttribute('rx', '32');
+        diffWave.setAttribute('ry', '12');
+        diffWave.style.transition = 'all 1.8s ease-out';
+        diffWave.style.opacity = '0.9';
+
+      } else if (stageIndex === 4) {
+        // Stage 4: Autonomous Emergency SOS & Stabilization
+        pipelineStateTitle.textContent = 'STAGE 4: EMERGENCY SOS DISPATCHED & PATIENT STABILIZING';
+        stepStage4.className = 'step-item active';
+        tagStage4.textContent = 'LTE-M BROADCAST SENT';
+
+        sosDispatchCard.classList.add('active-sos');
+        sosStatusBadge.textContent = '🚨 PRIORITY 1 DISPATCHED';
+        const now = new Date();
+        sosTimestamp.textContent = now.toTimeString().split(' ')[0];
+
+        // Target smooth recovery back to safe baseline (drug + tVNS worked!)
+        State.targets.eegFreq = 10.2;
+        State.targets.eegAmp = 21.0;
+        State.targets.eegPLV = 0.19;
+        State.targets.hr = 76;
+        State.targets.hrv = 60;
+        State.targets.eda = 2.4;
+        State.targets.imu = 0.03;
+
+        sound.playWarningAlarm();
+      }
+    }
+
+    /* =========================================================================
+       7. INTERACTIVE SIMULATION TIMELINE (18-20s FULL JUDGE DEMO FLOW)
+       ========================================================================= */
+    function clearAllTimers() {
+      State.timelineTimers.forEach(t => clearTimeout(t));
+      State.timelineTimers = [];
+      if (State.hapticInterval) {
+        clearInterval(State.hapticInterval);
+        State.hapticInterval = null;
+      }
+    }
+
+    function startSeizureSimulation() {
+      clearAllTimers();
+      State.isSeizureActive = true;
+      State.isOverridePossible = true;
+
+      // Ensure audio context is running on user click
+      sound.init();
+
+      logTerminal('TRIGGER', 'Judge triggered Pre-Ictal Seizure Simulation.', 'critical');
+      logTerminal('TINYML', 'Triple-sensor threshold crossed: EEG PLV(0.94), HRV RMSSD(16ms), GSR(12.4μS). Confidence: 98.4%.', 'critical');
+      logTerminal('PREDICT', 'Pre-ictal hypersynchrony confirmed. Seizure onset estimated in T-minus 45 seconds.', 'warn');
+
+      // 1. Transition immediately to Stage 1 (Pre-Ictal Detected + 5s rapid countdown)
+      updatePipelineUI(1);
+      sound.playWarningAlarm();
+
+      State.countdownRemaining = 5.0;
+      countdownBarFill.style.width = '100%';
+
+      // 5-second rapid countdown interval for interactive demo
+      State.hapticInterval = setInterval(() => {
+        State.countdownRemaining -= 0.1;
+        const pct = Math.max(0, (State.countdownRemaining / 5.0) * 100);
+        countdownBarFill.style.width = `${pct}%`;
+        overrideLabel.textContent = `FALSE ALARM OVERRIDE (${State.countdownRemaining.toFixed(1)}s)`;
+
+        if (State.countdownRemaining <= 0) {
+          clearInterval(State.hapticInterval);
+          State.hapticInterval = null;
+          State.isOverridePossible = false;
+        }
+      }, 100);
+
+      // t = 5.0s: Stage 2 Engages (tVNS electrical intervention)
+      const t1 = setTimeout(() => {
+        if (!State.isSeizureActive) return;
+        logTerminal('HAPTIC', '10s override window expired without patient cancellation.', 'warn');
+        logTerminal('STAGE 2', 'Initiating 25Hz biphasic tVNS (1.5mA current, 250μs pulse) to left cervical vagus branch.', 'info');
+        updatePipelineUI(2);
+      }, 5000);
+      State.timelineTimers.push(t1);
+
+      // t = 11.0s: Stage 3 Engages (Refractory spike persists -> Midazolam delivery)
+      const t2 = setTimeout(() => {
+        if (!State.isSeizureActive) return;
+        logTerminal('INTERV-1', 'EEG energy remains elevated (>180μV). Cortical hypersynchrony refractory to tVNS alone.', 'warn');
+        logTerminal('STAGE 3', 'Escalating to pharmacological intervention: Piezoelectric micropump activated.', 'critical');
+        logTerminal('DRUG', '5.0mg Fast-Acting Midazolam iontophoretically released via 64-channel microneedle array into capillaries.', 'critical');
+        updatePipelineUI(3);
+      }, 11000);
+      State.timelineTimers.push(t2);
+
+      // t = 15.0s: Stage 4 Engages (SOS Dispatched + Autonomous Stabilization begins)
+      const t3 = setTimeout(() => {
+        if (!State.isSeizureActive) return;
+        logTerminal('STAGE 4', 'Autonomous Emergency SOS packet encrypted (AES-256) & transmitted via LTE-M.', 'critical');
+        logTerminal('SOS', 'SRM General Hospital Trauma Center & Primary Caregiver alerted with live telemetry stream.', 'success');
+        logTerminal('GNSS', 'Incident coordinates locked: SRM Ramapuram Block 3 (13.0329° N, 80.1806° E).', 'info');
+        updatePipelineUI(4);
+      }, 15000);
+      State.timelineTimers.push(t3);
+
+      // t = 18.0s: Pharmacological GABA-A response dampens chaotic spikes
+      const t4 = setTimeout(() => {
+        if (!State.isSeizureActive) return;
+        logTerminal('PHARMA', 'Midazolam plasma concentration peak reached. GABA-A receptor agonism suppressing pyramidal discharge.', 'tinyml');
+        logTerminal('RECOVERY', 'Delta/Theta slowing receding. Normal background alpha rhythm (10.2Hz) re-emerging.', 'success');
+      }, 18000);
+      State.timelineTimers.push(t4);
+
+      // t = 21.0s: Full Stabilization Confirmed
+      const t5 = setTimeout(() => {
+        if (!State.isSeizureActive) return;
+        document.body.classList.remove('seizure-alert-active');
+        radarPin.classList.remove('seizure-active');
+        [tvnsArc1, tvnsArc2, tvnsArc3].forEach(a => a.classList.remove('firing'));
+
+        pipelineStateTitle.textContent = 'PATIENT STABILIZED — SEIZURE ABORTED (TOTAL TIME: 21s)';
+        stepStage4.className = 'step-item completed';
+        tagStage4.textContent = 'PATIENT STABILIZED';
+
+        sound.playStabilizedChord();
+        logTerminal('STABILIZED', 'Seizure aborted prior to clinical tonic phase. Patient conscious and hemodynamically stable.', 'success');
+      }, 21000);
+      State.timelineTimers.push(t5);
+    }
+
+    // False Alarm Override Handler
+    function handleFalseAlarmOverride() {
+      if (!State.isOverridePossible) return;
+      clearAllTimers();
+      State.isSeizureActive = false;
+      State.isOverridePossible = false;
+
+      sound.playOverrideChime();
+      logTerminal('OVERRIDE', 'Patient tapped patch 2x / clicked False Alarm Override.', 'warn');
+      logTerminal('SAFETY', 'Haptic vibration stopped. Stage 2 (tVNS) and Stage 3 (Midazolam) safely aborted.', 'success');
+      logTerminal('STATUS', 'Returning to Stage 0 continuous monitoring.', 'info');
+
+      updatePipelineUI(0);
+    }
+
+    // Reset to Baseline Handler
+    function handleResetBaseline() {
+      clearAllTimers();
+      State.isSeizureActive = false;
+      State.isOverridePossible = false;
+
+      sound.playTone(440, 'sine', 0.08, 0.05);
+      logTerminal('RESET', 'System telemetry reset to pristine baseline.', 'info');
+
+      // Refill drug reservoir
+      State.targets.drugLevel = 100.0;
+      State.vitals.drugLevel = 100.0;
+
+      // Clear diffusion wave
+      const diffWave = document.getElementById('diffusionWave');
+      diffWave.style.opacity = '0';
+      diffWave.setAttribute('rx', '0');
+      diffWave.setAttribute('ry', '0');
+
+      updatePipelineUI(0);
+    }
+
+    function triggerSimulatedCall() {
+      logTerminal('CALL', 'Initiating high-priority VoIP dispatch to 108 Emergency Ambulance Dispatcher...', 'critical');
+      setTimeout(() => {
+        logTerminal('CALL', '108 Dispatcher connected: "SRM Ramapuram Ambulance Unit 4 en route. ETA 4 mins."', 'success');
+      }, 1200);
+    }
+
+    /* =========================================================================
+       8. EVENT LISTENERS & INITIALIZATION
+       ========================================================================= */
+    document.addEventListener('DOMContentLoaded', () => {
+      resizeCanvases();
+      seedInitialLogs();
+      updatePipelineUI(0);
+
+      // Start 60 FPS Oscilloscope Loop
+      requestAnimationFrame(renderWaveforms);
+
+      // Controls
+      document.getElementById('btnTriggerSeizure').addEventListener('click', startSeizureSimulation);
+      document.getElementById('btnOverride').addEventListener('click', handleFalseAlarmOverride);
+      document.getElementById('btnReset').addEventListener('click', handleResetBaseline);
+
+      // Sound Toggle
+      const btnSound = document.getElementById('btnSoundToggle');
+      const soundLabel = document.getElementById('soundLabel');
+      btnSound.addEventListener('click', () => {
+        sound.init();
+        sound.muted = !sound.muted;
+        if (sound.muted) {
+          btnSound.classList.remove('active');
+          soundLabel.textContent = 'AUDIO: MUTED';
+        } else {
+          btnSound.classList.add('active');
+          soundLabel.textContent = 'AUDIO: ON';
+          sound.playTone(880, 'sine', 0.06, 0.05);
+        }
+      });
+
+      // Terminal Controls
+      document.getElementById('btnClearLog').addEventListener('click', () => {
+        terminalEl.innerHTML = '';
+        logTerminal('TERMINAL', 'Log buffer cleared by operator.', 'info');
+      });
+
+      const btnToggleAutoScroll = document.getElementById('btnToggleAutoScroll');
+      btnToggleAutoScroll.addEventListener('click', () => {
+        State.autoScrollTerminal = !State.autoScrollTerminal;
+        btnToggleAutoScroll.textContent = `SCROLL: ${State.autoScrollTerminal ? 'ON' : 'OFF'}`;
+      });
+
+      // Interactive Patch Schematic Tooltip Inspector
+      const tooltip = document.getElementById('patchTooltip');
+      const tooltipTitle = document.getElementById('tooltipTitle');
+      const tooltipDesc = document.getElementById('tooltipDesc');
+      const patchContainer = document.getElementById('patchContainer');
+
+      const tooltips = {
+        sensorArrayGroup: {
+          title: 'Dry Ag/AgCl Sensor Array (6-Node Ring)',
+          desc: 'High-density dry fractal contact electrodes. Captures 250Hz sEMG/EEG micro-voltages without conductive gel.'
+        },
+        tvnsPadLeft: {
+          title: 'tVNS Cathode Electrode',
+          desc: 'Gold-plated cervical contact. Discharges 25Hz biphasic pulses to the left vagus nerve to abort seizure activity.'
+        },
+        tvnsPadRight: {
+          title: 'tVNS Anode Electrode',
+          desc: 'Returns therapeutic micro-current with active DC charge-balancing to prevent tissue irritation.'
+        },
+        microneedleReservoirGroup: {
+          title: 'Piezoelectric Microneedle Chamber',
+          desc: 'Hermetic titanium cartridge containing 5mg Midazolam with 64 silicon microneedles for painless capillary drug delivery.'
+        },
+        patchBase: {
+          title: 'USP Class VI Hydrogel Membrane',
+          desc: 'Biocompatible, hypoallergenic breathable silicone-hydrogel skin patch. Conformal seal with 36-hour skin wear rating.'
+        }
+      };
+
+      Object.keys(tooltips).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.cursor = 'pointer';
+        el.addEventListener('mouseenter', (e) => {
+          tooltipTitle.textContent = tooltips[id].title;
+          tooltipDesc.textContent = tooltips[id].desc;
+          tooltip.style.display = 'block';
+        });
+        el.addEventListener('mousemove', (e) => {
+          const rect = patchContainer.getBoundingClientRect();
+          tooltip.style.left = `${e.clientX - rect.left + 14}px`;
+          tooltip.style.top = `${e.clientY - rect.top + 14}px`;
+        });
+        el.addEventListener('mouseleave', () => {
+          tooltip.style.display = 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
